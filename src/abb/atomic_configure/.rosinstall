@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/labbare/abb_ws/src/abb/devel/setup.sh
