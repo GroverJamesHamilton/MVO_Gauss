@@ -55,6 +55,7 @@ double showScale = dimShow/dim;
 double prevscale = 0;
 double alpha = 0.5;
 //cv::Rect crop_region(300, 400, 680, 310);
+//cv::Rect crop_region(414, 175, 414, 200);
 cv::Rect crop_region(414, 175, 414, 200);
 
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);

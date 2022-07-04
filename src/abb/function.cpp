@@ -341,7 +341,7 @@ double W, X, Y, Z, er;
 
 		if(Y > 0.005 && Y < 50 && Y != 1 && W > 1e-20)//&& abs(Y-1) > 0.001
 		{
-			//cout << "Ok value: " << Y << endl;
+			cout << "Ok value: " << Y << endl;
 			//cout << X << "___" << Y << "___" << Z << endl;
 			/*
 			Xj.at<double>(0,0) = X;
@@ -361,9 +361,12 @@ double W, X, Y, Z, er;
 		}
 	  }
 	}
-double average = avg(Yval);
-double var = variance(Yval, average);
 
+double average = avg(Yval);
+cout << "Mean Y: " << average << endl;
+double var = variance(Yval, average);
+cout << "Variance Y: " << var << endl;
+	cout << endl;
 }
 
 /*
