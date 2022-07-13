@@ -132,6 +132,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/labbare/abb_ws/build/gtest/cmake_install.cmake")
   include("/home/labbare/abb_ws/build/nav/cmake_install.cmake")
+  include("/home/labbare/abb_ws/build/fusion/cmake_install.cmake")
   include("/home/labbare/abb_ws/build/abb/cmake_install.cmake")
   include("/home/labbare/abb_ws/build/imu/cmake_install.cmake")
   include("/home/labbare/abb_ws/build/odom/cmake_install.cmake")

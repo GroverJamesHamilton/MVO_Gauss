@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/labbare/abb_ws/src/odom/odom_node.cpp" "/home/labbare/abb_ws/build/odom/CMakeFiles/odom_node.dir/odom_node.cpp.o"
+  "/home/labbare/abb_ws/src/odom/src/odom_node.cpp" "/home/labbare/abb_ws/build/odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

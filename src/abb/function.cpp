@@ -127,7 +127,7 @@ drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good, Scalar::al
 //-- Show detected matches
 cv::resize(img_matches, img_matches, cv::Size(), 0.25, 0.25);
 cv::resize(img_matches_good, img_matches_good, cv::Size(), 1, 1);
-//imshow("Good Matches", img_matches_good);
+imshow("Good Matches", img_matches_good);
 /*cout << "Feature matching time:" << ms << endl;
 cout << "Number of good matches:" << good_matches.size() << endl;
 cout << "Number of matches overall:" << matches.size() << endl;

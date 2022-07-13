@@ -55,6 +55,7 @@ CMAKE_BINARY_DIR = /home/labbare/abb_ws/build
 # The main recursive "all" target.
 all: gtest/all
 all: nav/all
+all: fusion/all
 all: abb/all
 all: imu/all
 all: odom/all
@@ -64,6 +65,7 @@ all: odom/all
 # The main recursive "preinstall" target.
 preinstall: gtest/preinstall
 preinstall: nav/preinstall
+preinstall: fusion/preinstall
 preinstall: abb/preinstall
 preinstall: imu/preinstall
 preinstall: odom/preinstall
@@ -78,6 +80,7 @@ clean: CMakeFiles/tests.dir/clean
 clean: CMakeFiles/download_extra_data.dir/clean
 clean: gtest/clean
 clean: nav/clean
+clean: fusion/clean
 clean: abb/clean
 clean: imu/clean
 clean: odom/clean
@@ -111,6 +114,24 @@ abb/clean: abb/CMakeFiles/abb_node.dir/clean
 abb/clean: abb/CMakeFiles/actionlib_msgs_generate_messages_lisp.dir/clean
 
 .PHONY : abb/clean
+
+#=============================================================================
+# Directory level rules for directory fusion
+
+# Recursive "all" directory target.
+fusion/all: fusion/CMakeFiles/fusion_node.dir/all
+
+.PHONY : fusion/all
+
+# Recursive "preinstall" directory target.
+fusion/preinstall:
+
+.PHONY : fusion/preinstall
+
+# Recursive "clean" directory target.
+fusion/clean: fusion/CMakeFiles/fusion_node.dir/clean
+
+.PHONY : fusion/clean
 
 #=============================================================================
 # Directory level rules for directory gtest
@@ -392,7 +413,7 @@ gtest/googlemock/CMakeFiles/gmock_main.dir/all: gtest/googlemock/CMakeFiles/gmoc
 gtest/googlemock/CMakeFiles/gmock_main.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f gtest/googlemock/CMakeFiles/gmock_main.dir/build.make gtest/googlemock/CMakeFiles/gmock_main.dir/depend
 	$(MAKE) -f gtest/googlemock/CMakeFiles/gmock_main.dir/build.make gtest/googlemock/CMakeFiles/gmock_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=6,7 "Built target gmock_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=8,9 "Built target gmock_main"
 .PHONY : gtest/googlemock/CMakeFiles/gmock_main.dir/all
 
 # Build rule for subdir invocation for target.
@@ -419,7 +440,7 @@ gtest/googlemock/CMakeFiles/gmock_main.dir/clean:
 gtest/googlemock/CMakeFiles/gmock.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f gtest/googlemock/CMakeFiles/gmock.dir/build.make gtest/googlemock/CMakeFiles/gmock.dir/depend
 	$(MAKE) -f gtest/googlemock/CMakeFiles/gmock.dir/build.make gtest/googlemock/CMakeFiles/gmock.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=4,5 "Built target gmock"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=6,7 "Built target gmock"
 .PHONY : gtest/googlemock/CMakeFiles/gmock.dir/all
 
 # Build rule for subdir invocation for target.
@@ -446,7 +467,7 @@ gtest/googlemock/CMakeFiles/gmock.dir/clean:
 gtest/googletest/CMakeFiles/gtest_main.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest_main.dir/build.make gtest/googletest/CMakeFiles/gtest_main.dir/depend
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest_main.dir/build.make gtest/googletest/CMakeFiles/gtest_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=10,11 "Built target gtest_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=12,13 "Built target gtest_main"
 .PHONY : gtest/googletest/CMakeFiles/gtest_main.dir/all
 
 # Build rule for subdir invocation for target.
@@ -473,7 +494,7 @@ gtest/googletest/CMakeFiles/gtest_main.dir/clean:
 gtest/googletest/CMakeFiles/gtest.dir/all:
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/depend
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=8,9 "Built target gtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=10,11 "Built target gtest"
 .PHONY : gtest/googletest/CMakeFiles/gtest.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1121,7 +1142,7 @@ nav/CMakeFiles/rosgraph_msgs_generate_messages_nodejs.dir/clean:
 nav/CMakeFiles/nav_node.dir/all: nav/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/all
 	$(MAKE) -f nav/CMakeFiles/nav_node.dir/build.make nav/CMakeFiles/nav_node.dir/depend
 	$(MAKE) -f nav/CMakeFiles/nav_node.dir/build.make nav/CMakeFiles/nav_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=14,15 "Built target nav_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=16,17 "Built target nav_node"
 .PHONY : nav/CMakeFiles/nav_node.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1194,6 +1215,33 @@ roscpp_generate_messages_eus: nav/CMakeFiles/roscpp_generate_messages_eus.dir/ru
 nav/CMakeFiles/roscpp_generate_messages_eus.dir/clean:
 	$(MAKE) -f nav/CMakeFiles/roscpp_generate_messages_eus.dir/build.make nav/CMakeFiles/roscpp_generate_messages_eus.dir/clean
 .PHONY : nav/CMakeFiles/roscpp_generate_messages_eus.dir/clean
+
+#=============================================================================
+# Target rules for target fusion/CMakeFiles/fusion_node.dir
+
+# All Build rule for target.
+fusion/CMakeFiles/fusion_node.dir/all: nav/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/all
+	$(MAKE) -f fusion/CMakeFiles/fusion_node.dir/build.make fusion/CMakeFiles/fusion_node.dir/depend
+	$(MAKE) -f fusion/CMakeFiles/fusion_node.dir/build.make fusion/CMakeFiles/fusion_node.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=4,5 "Built target fusion_node"
+.PHONY : fusion/CMakeFiles/fusion_node.dir/all
+
+# Build rule for subdir invocation for target.
+fusion/CMakeFiles/fusion_node.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/labbare/abb_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 fusion/CMakeFiles/fusion_node.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/labbare/abb_ws/build/CMakeFiles 0
+.PHONY : fusion/CMakeFiles/fusion_node.dir/rule
+
+# Convenience name for target.
+fusion_node: fusion/CMakeFiles/fusion_node.dir/rule
+
+.PHONY : fusion_node
+
+# clean rule for target.
+fusion/CMakeFiles/fusion_node.dir/clean:
+	$(MAKE) -f fusion/CMakeFiles/fusion_node.dir/build.make fusion/CMakeFiles/fusion_node.dir/clean
+.PHONY : fusion/CMakeFiles/fusion_node.dir/clean
 
 #=============================================================================
 # Target rules for target abb/CMakeFiles/nav_msgs_generate_messages_eus.dir
@@ -1533,7 +1581,7 @@ abb/CMakeFiles/actionlib_msgs_generate_messages_lisp.dir/clean:
 imu/CMakeFiles/imu_node.dir/all: nav/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/all
 	$(MAKE) -f imu/CMakeFiles/imu_node.dir/build.make imu/CMakeFiles/imu_node.dir/depend
 	$(MAKE) -f imu/CMakeFiles/imu_node.dir/build.make imu/CMakeFiles/imu_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=12,13 "Built target imu_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=14,15 "Built target imu_node"
 .PHONY : imu/CMakeFiles/imu_node.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1560,7 +1608,7 @@ imu/CMakeFiles/imu_node.dir/clean:
 odom/CMakeFiles/odom_node.dir/all: abb/CMakeFiles/nav_msgs_generate_messages_cpp.dir/all
 	$(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/depend
 	$(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=16,17 "Built target odom_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=18,19 "Built target odom_node"
 .PHONY : odom/CMakeFiles/odom_node.dir/all
 
 # Build rule for subdir invocation for target.

@@ -1,2 +1,2 @@
-abb:imu:nav:odom
+abb:fusion:imu:nav:odom
 -DCATKIN_DEVEL_PREFIX=/home/labbare/abb_ws/devel -DCMAKE_INSTALL_PREFIX=/home/labbare/abb_ws/install -G Unix Makefiles

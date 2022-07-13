@@ -6,11 +6,11 @@
 
 #IncludeRegexTransform: 
 
-/home/labbare/abb_ws/src/odom/odom_node.cpp
+/home/labbare/abb_ws/src/odom/src/odom_node.cpp
 ros/ros.h
-/home/labbare/abb_ws/src/odom/ros/ros.h
+/home/labbare/abb_ws/src/odom/src/ros/ros.h
 nav_msgs/Odometry.h
-/home/labbare/abb_ws/src/odom/nav_msgs/Odometry.h
+/home/labbare/abb_ws/src/odom/src/nav_msgs/Odometry.h
 
 /opt/ros/noetic/include/geometry_msgs/Point.h
 string

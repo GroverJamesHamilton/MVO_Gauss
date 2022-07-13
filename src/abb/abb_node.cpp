@@ -54,9 +54,10 @@ double dimShow = 1000;
 double showScale = dimShow/dim;
 double prevscale = 0;
 double alpha = 0.5;
+//cv::Rect crop_region(0, 0, 1280, 720);
 //cv::Rect crop_region(300, 400, 680, 310);
-//cv::Rect crop_region(414, 175, 414, 200);
 cv::Rect crop_region(414, 175, 414, 200);
+//cv::Rect crop_region(414, 175, 414, 200);
 
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
@@ -66,13 +67,13 @@ double prevYaw = 0;
 double rotDiff = 0;
 
 Ptr<ORB> orbis = cv::ORB::create(1500,
-		1.25f,
-		10,
+		1.2f,
+		8,
 		15,
 		0,
 		3,
 		ORB::FAST_SCORE,
-		50, // Descriptor patch size
+	  31, // Descriptor patch size
 		9);
 
 double P_0[3][3] = {{1,0,0},
@@ -113,7 +114,7 @@ public:
     : it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
-    //image_sub_ = it_.subscribe("/myumi_005/rgb/image_raw", 1, &ImageConverter::imageCb, this);
+    //image_sub_ = it_.subscribe("/myumi_001/rgb/image_raw", 1, &ImageConverter::imageCb, this);
 		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", 1, &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/image_converter/output_video", 1);
     cv::namedWindow(OPENCV_WINDOW);
@@ -144,14 +145,14 @@ public:
   if (iterations == 1)
   {
     oldFrame0 = cv_ptr->image;
-    //undistort(oldFrame0, oldFrame, K, dist, Mat());
-		undistort(oldFrame0, oldFrame, Kitti, Mat(), Mat());
+    undistort(oldFrame0, oldFrame, K, dist, Mat());
+		//undistort(oldFrame0, oldFrame, Kitti, Mat(), Mat());
 		oldCrop = oldFrame(crop_region);
     orbis->detectAndCompute(oldCrop, noArray(), keyp1, desc1, false);
   }
     frame0 = cv_ptr->image;
-    //undistort(frame0, frame, K, dist, Mat());
-		undistort(frame0, frame, Kitti, Mat(), Mat());
+    undistort(frame0, frame, K, dist, Mat());
+		//undistort(frame0, frame, Kitti, Mat(), Mat());
 		crop = frame(crop_region);
     orbis->detectAndCompute(crop, noArray(), keyp2, desc2, false);
 
@@ -159,20 +160,20 @@ public:
 
     if(keyp1.size() > 6 || keyp2.size() > 6)
     {
-    //matches = BruteForce(oldFrame, frame, keyp1, keyp2, desc1, desc2, 0.5);
-		matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
-		//cout << "Matches size: " << matches.size() << endl;
+    matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
+		//matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
+		cout << "Matches size: " << matches.size() << endl;
 		//cout << matches.size() << ",";
 
     tie(t,R) = tranRot(keyp1, keyp2, matches);
 		//hconcat(R,t,P);
- 		/*
+
 		nrmatches = nrmatches + matches.size();
 		avgmatches = nrmatches/iterations;
 		cout << "Average number of matches: " << avgmatches << endl;
 		cout << endl;
-*/
 
+/*
 		PkHat = scaleUpdate(Kitti, Rprev, R, tprev, t);
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
 		cv::triangulatePoints(Kitti*Pk_1Hat, PkHat, scene1, scene2, point3d);
@@ -181,6 +182,7 @@ public:
 			getScale(point3d, PkHat, matches, keyp2, alpha, prevscale);
 			//cout << endl;
 		}
+*/
 
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1)
 		{
@@ -194,7 +196,7 @@ public:
     tpos = tpos + Rpos*t;
 		Rpos = R*Rpos;
 		//cout << endl;
-    }
+	}
 
     X = 5*tpos.at<double>(0,0);
     Y = 5*tpos.at<double>(0,2);
@@ -203,18 +205,14 @@ public:
     cv::resize(trajectory, traj, cv::Size(), showScale, showScale);
     imshow( "Trajectory", traj );
     }
-		/*
-		else {
-			fail++;
-			cout << "Fail rate: " << fail/iterations << endl;
-		} */
+
 		oldCrop = crop.clone();
   	oldFrame = frame.clone();
     keyp1 = keyp2;
     desc1 = desc2.clone();
 
   iterations++;
-cout << "Frame number: " << iterations << endl;
+//cout << "Frame number: " << iterations << endl;
     //------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
     // Update GUI Window

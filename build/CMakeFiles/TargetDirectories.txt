@@ -68,6 +68,14 @@
 /home/labbare/abb_ws/build/nav/CMakeFiles/edit_cache.dir
 /home/labbare/abb_ws/build/nav/CMakeFiles/roscpp_generate_messages_eus.dir
 /home/labbare/abb_ws/build/nav/CMakeFiles/rebuild_cache.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/install/strip.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/install/local.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/install.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/list_install_components.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/rebuild_cache.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/edit_cache.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/test.dir
+/home/labbare/abb_ws/build/fusion/CMakeFiles/fusion_node.dir
 /home/labbare/abb_ws/build/abb/CMakeFiles/install/strip.dir
 /home/labbare/abb_ws/build/abb/CMakeFiles/install/local.dir
 /home/labbare/abb_ws/build/abb/CMakeFiles/install.dir

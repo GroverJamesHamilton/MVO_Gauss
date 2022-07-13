@@ -197,32 +197,32 @@ _catkin_empty_exported_target/fast:
 	cd /home/labbare/abb_ws/build && $(MAKE) -f odom/CMakeFiles/_catkin_empty_exported_target.dir/build.make odom/CMakeFiles/_catkin_empty_exported_target.dir/build
 .PHONY : _catkin_empty_exported_target/fast
 
-odom_node.o: odom_node.cpp.o
+src/odom_node.o: src/odom_node.cpp.o
 
-.PHONY : odom_node.o
+.PHONY : src/odom_node.o
 
 # target to build an object file
-odom_node.cpp.o:
-	cd /home/labbare/abb_ws/build && $(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/odom_node.cpp.o
-.PHONY : odom_node.cpp.o
+src/odom_node.cpp.o:
+	cd /home/labbare/abb_ws/build && $(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.o
+.PHONY : src/odom_node.cpp.o
 
-odom_node.i: odom_node.cpp.i
+src/odom_node.i: src/odom_node.cpp.i
 
-.PHONY : odom_node.i
+.PHONY : src/odom_node.i
 
 # target to preprocess a source file
-odom_node.cpp.i:
-	cd /home/labbare/abb_ws/build && $(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/odom_node.cpp.i
-.PHONY : odom_node.cpp.i
+src/odom_node.cpp.i:
+	cd /home/labbare/abb_ws/build && $(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.i
+.PHONY : src/odom_node.cpp.i
 
-odom_node.s: odom_node.cpp.s
+src/odom_node.s: src/odom_node.cpp.s
 
-.PHONY : odom_node.s
+.PHONY : src/odom_node.s
 
 # target to generate assembly for a file
-odom_node.cpp.s:
-	cd /home/labbare/abb_ws/build && $(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/odom_node.cpp.s
-.PHONY : odom_node.cpp.s
+src/odom_node.cpp.s:
+	cd /home/labbare/abb_ws/build && $(MAKE) -f odom/CMakeFiles/odom_node.dir/build.make odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.s
+.PHONY : src/odom_node.cpp.s
 
 # Help Target
 help:
@@ -239,9 +239,9 @@ help:
 	@echo "... test"
 	@echo "... odom_node"
 	@echo "... _catkin_empty_exported_target"
-	@echo "... odom_node.o"
-	@echo "... odom_node.i"
-	@echo "... odom_node.s"
+	@echo "... src/odom_node.o"
+	@echo "... src/odom_node.i"
+	@echo "... src/odom_node.s"
 .PHONY : help
 
 

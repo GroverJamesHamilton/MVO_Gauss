@@ -623,6 +623,19 @@ roscpp_generate_messages_eus/fast:
 .PHONY : roscpp_generate_messages_eus/fast
 
 #=============================================================================
+# Target rules for targets named fusion_node
+
+# Build rule for target.
+fusion_node: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 fusion_node
+.PHONY : fusion_node
+
+# fast build rule for target.
+fusion_node/fast:
+	$(MAKE) -f fusion/CMakeFiles/fusion_node.dir/build.make fusion/CMakeFiles/fusion_node.dir/build
+.PHONY : fusion_node/fast
+
+#=============================================================================
 # Target rules for targets named nav_msgs_generate_messages_eus
 
 # Build rule for target.
@@ -852,6 +865,7 @@ help:
 	@echo "... nav_node"
 	@echo "... rosgraph_msgs_generate_messages_cpp"
 	@echo "... roscpp_generate_messages_eus"
+	@echo "... fusion_node"
 	@echo "... nav_msgs_generate_messages_eus"
 	@echo "... nav_msgs_generate_messages_cpp"
 	@echo "... nav_msgs_generate_messages_lisp"

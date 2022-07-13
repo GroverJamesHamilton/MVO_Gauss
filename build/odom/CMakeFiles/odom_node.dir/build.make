@@ -57,27 +57,27 @@ include odom/CMakeFiles/odom_node.dir/progress.make
 # Include the compile flags for this target's objects.
 include odom/CMakeFiles/odom_node.dir/flags.make
 
-odom/CMakeFiles/odom_node.dir/odom_node.cpp.o: odom/CMakeFiles/odom_node.dir/flags.make
-odom/CMakeFiles/odom_node.dir/odom_node.cpp.o: /home/labbare/abb_ws/src/odom/odom_node.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object odom/CMakeFiles/odom_node.dir/odom_node.cpp.o"
-	cd /home/labbare/abb_ws/build/odom && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/odom_node.dir/odom_node.cpp.o -c /home/labbare/abb_ws/src/odom/odom_node.cpp
+odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.o: odom/CMakeFiles/odom_node.dir/flags.make
+odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.o: /home/labbare/abb_ws/src/odom/src/odom_node.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/labbare/abb_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.o"
+	cd /home/labbare/abb_ws/build/odom && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/odom_node.dir/src/odom_node.cpp.o -c /home/labbare/abb_ws/src/odom/src/odom_node.cpp
 
-odom/CMakeFiles/odom_node.dir/odom_node.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/odom_node.dir/odom_node.cpp.i"
-	cd /home/labbare/abb_ws/build/odom && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/labbare/abb_ws/src/odom/odom_node.cpp > CMakeFiles/odom_node.dir/odom_node.cpp.i
+odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/odom_node.dir/src/odom_node.cpp.i"
+	cd /home/labbare/abb_ws/build/odom && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/labbare/abb_ws/src/odom/src/odom_node.cpp > CMakeFiles/odom_node.dir/src/odom_node.cpp.i
 
-odom/CMakeFiles/odom_node.dir/odom_node.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/odom_node.dir/odom_node.cpp.s"
-	cd /home/labbare/abb_ws/build/odom && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/labbare/abb_ws/src/odom/odom_node.cpp -o CMakeFiles/odom_node.dir/odom_node.cpp.s
+odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/odom_node.dir/src/odom_node.cpp.s"
+	cd /home/labbare/abb_ws/build/odom && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/labbare/abb_ws/src/odom/src/odom_node.cpp -o CMakeFiles/odom_node.dir/src/odom_node.cpp.s
 
 # Object files for target odom_node
 odom_node_OBJECTS = \
-"CMakeFiles/odom_node.dir/odom_node.cpp.o"
+"CMakeFiles/odom_node.dir/src/odom_node.cpp.o"
 
 # External object files for target odom_node
 odom_node_EXTERNAL_OBJECTS =
 
-/home/labbare/abb_ws/devel/lib/odom/odom_node: odom/CMakeFiles/odom_node.dir/odom_node.cpp.o
+/home/labbare/abb_ws/devel/lib/odom/odom_node: odom/CMakeFiles/odom_node.dir/src/odom_node.cpp.o
 /home/labbare/abb_ws/devel/lib/odom/odom_node: odom/CMakeFiles/odom_node.dir/build.make
 /home/labbare/abb_ws/devel/lib/odom/odom_node: /opt/ros/noetic/lib/libroscpp.so
 /home/labbare/abb_ws/devel/lib/odom/odom_node: /usr/lib/x86_64-linux-gnu/libpthread.so
