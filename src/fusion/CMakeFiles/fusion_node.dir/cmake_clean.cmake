@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
+  "/home/labbare/abb_ws/devel/lib/fusion/fusion_node"
+  "/home/labbare/abb_ws/devel/lib/fusion/fusion_node.pdb"
   "CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o"
-  "devel/lib/fusion/fusion_node"
-  "devel/lib/fusion/fusion_node.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

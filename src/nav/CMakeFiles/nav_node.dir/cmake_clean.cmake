@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
+  "/home/labbare/abb_ws/devel/lib/nav/nav_node"
+  "/home/labbare/abb_ws/devel/lib/nav/nav_node.pdb"
   "CMakeFiles/nav_node.dir/src/nav_node.cpp.o"
-  "devel/lib/nav/nav_node"
-  "devel/lib/nav/nav_node.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

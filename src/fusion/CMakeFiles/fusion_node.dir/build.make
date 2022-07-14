@@ -43,32 +43,32 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/labbare/abb_ws/src/fusion
+CMAKE_SOURCE_DIR = /home/labbare/abb_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/labbare/abb_ws/src/fusion
+CMAKE_BINARY_DIR = /home/labbare/abb_ws/src
 
 # Include any dependencies generated for this target.
-include CMakeFiles/fusion_node.dir/depend.make
+include fusion/CMakeFiles/fusion_node.dir/depend.make
 
 # Include the progress variables for this target.
-include CMakeFiles/fusion_node.dir/progress.make
+include fusion/CMakeFiles/fusion_node.dir/progress.make
 
 # Include the compile flags for this target's objects.
-include CMakeFiles/fusion_node.dir/flags.make
+include fusion/CMakeFiles/fusion_node.dir/flags.make
 
-CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o: CMakeFiles/fusion_node.dir/flags.make
-CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o: src/fusion_node.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/labbare/abb_ws/src/fusion/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o -c /home/labbare/abb_ws/src/fusion/src/fusion_node.cpp
+fusion/CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o: fusion/CMakeFiles/fusion_node.dir/flags.make
+fusion/CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o: fusion/src/fusion_node.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/labbare/abb_ws/src/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object fusion/CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o"
+	cd /home/labbare/abb_ws/src/fusion && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o -c /home/labbare/abb_ws/src/fusion/src/fusion_node.cpp
 
-CMakeFiles/fusion_node.dir/src/fusion_node.cpp.i: cmake_force
+fusion/CMakeFiles/fusion_node.dir/src/fusion_node.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/fusion_node.dir/src/fusion_node.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/labbare/abb_ws/src/fusion/src/fusion_node.cpp > CMakeFiles/fusion_node.dir/src/fusion_node.cpp.i
+	cd /home/labbare/abb_ws/src/fusion && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/labbare/abb_ws/src/fusion/src/fusion_node.cpp > CMakeFiles/fusion_node.dir/src/fusion_node.cpp.i
 
-CMakeFiles/fusion_node.dir/src/fusion_node.cpp.s: cmake_force
+fusion/CMakeFiles/fusion_node.dir/src/fusion_node.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/fusion_node.dir/src/fusion_node.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/labbare/abb_ws/src/fusion/src/fusion_node.cpp -o CMakeFiles/fusion_node.dir/src/fusion_node.cpp.s
+	cd /home/labbare/abb_ws/src/fusion && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/labbare/abb_ws/src/fusion/src/fusion_node.cpp -o CMakeFiles/fusion_node.dir/src/fusion_node.cpp.s
 
 # Object files for target fusion_node
 fusion_node_OBJECTS = \
@@ -77,39 +77,39 @@ fusion_node_OBJECTS = \
 # External object files for target fusion_node
 fusion_node_EXTERNAL_OBJECTS =
 
-devel/lib/fusion/fusion_node: CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o
-devel/lib/fusion/fusion_node: CMakeFiles/fusion_node.dir/build.make
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libroscpp.so
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libpthread.so
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librosconsole.so
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librosconsole_log4cxx.so
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librosconsole_backend_interface.so
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/liblog4cxx.so
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libxmlrpcpp.so
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libroscpp_serialization.so
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librostime.so
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0
-devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libcpp_common.so
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
-devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
-devel/lib/fusion/fusion_node: CMakeFiles/fusion_node.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/labbare/abb_ws/src/fusion/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable devel/lib/fusion/fusion_node"
-	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/fusion_node.dir/link.txt --verbose=$(VERBOSE)
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: fusion/CMakeFiles/fusion_node.dir/src/fusion_node.cpp.o
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: fusion/CMakeFiles/fusion_node.dir/build.make
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libroscpp.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libpthread.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librosconsole.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librosconsole_log4cxx.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librosconsole_backend_interface.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/liblog4cxx.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libxmlrpcpp.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libroscpp_serialization.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/librostime.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /opt/ros/noetic/lib/libcpp_common.so
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
+/home/labbare/abb_ws/devel/lib/fusion/fusion_node: fusion/CMakeFiles/fusion_node.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/labbare/abb_ws/src/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable /home/labbare/abb_ws/devel/lib/fusion/fusion_node"
+	cd /home/labbare/abb_ws/src/fusion && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/fusion_node.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/fusion_node.dir/build: devel/lib/fusion/fusion_node
+fusion/CMakeFiles/fusion_node.dir/build: /home/labbare/abb_ws/devel/lib/fusion/fusion_node
 
-.PHONY : CMakeFiles/fusion_node.dir/build
+.PHONY : fusion/CMakeFiles/fusion_node.dir/build
 
-CMakeFiles/fusion_node.dir/clean:
-	$(CMAKE_COMMAND) -P CMakeFiles/fusion_node.dir/cmake_clean.cmake
-.PHONY : CMakeFiles/fusion_node.dir/clean
+fusion/CMakeFiles/fusion_node.dir/clean:
+	cd /home/labbare/abb_ws/src/fusion && $(CMAKE_COMMAND) -P CMakeFiles/fusion_node.dir/cmake_clean.cmake
+.PHONY : fusion/CMakeFiles/fusion_node.dir/clean
 
-CMakeFiles/fusion_node.dir/depend:
-	cd /home/labbare/abb_ws/src/fusion && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/labbare/abb_ws/src/fusion /home/labbare/abb_ws/src/fusion /home/labbare/abb_ws/src/fusion /home/labbare/abb_ws/src/fusion /home/labbare/abb_ws/src/fusion/CMakeFiles/fusion_node.dir/DependInfo.cmake --color=$(COLOR)
-.PHONY : CMakeFiles/fusion_node.dir/depend
+fusion/CMakeFiles/fusion_node.dir/depend:
+	cd /home/labbare/abb_ws/src && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/labbare/abb_ws/src /home/labbare/abb_ws/src/fusion /home/labbare/abb_ws/src /home/labbare/abb_ws/src/fusion /home/labbare/abb_ws/src/fusion/CMakeFiles/fusion_node.dir/DependInfo.cmake --color=$(COLOR)
+.PHONY : fusion/CMakeFiles/fusion_node.dir/depend
 

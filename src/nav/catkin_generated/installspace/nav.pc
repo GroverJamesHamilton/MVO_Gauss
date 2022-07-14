@@ -1,4 +1,4 @@
-prefix=/usr/local
+prefix=/home/labbare/abb_ws/install
 
 Name: nav
 Description: Description of nav
