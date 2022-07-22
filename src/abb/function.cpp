@@ -383,6 +383,18 @@ cout << xj - PkHat*Xj << endl;
 cout << endl;
 */
 
+double avgMatchDist(vector<DMatch> matches)
+{
+double avg;
+double sum = 0;
+	for (size_t i = 0; i < matches.size(); i++)
+	{
+		sum = sum + matches[i].distance;
+  }
+	avg = sum/matches.size();
+	return avg;
+}
+
 
 
 

@@ -41,5 +41,6 @@ tuple <vector<Point2d>, vector<Point2d>> getPixLoc(vector<KeyPoint> keyp1, vecto
 void getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2, double alpha, double prevscale);
 double avg(vector<double> v);
 double variance(vector<double> v,double mean);
+double avgMatchDist(vector<DMatch> matches);
 
 #endif

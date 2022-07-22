@@ -7,6 +7,11 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
+//Odometry
+#include <tf/transform_broadcaster.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/Twist.h>
+
 //CV
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
@@ -33,9 +38,6 @@ Mat RodRot;
 Mat t = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 Mat tprev = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 
-Mat PkHat;
-Mat Pk_1Hat = cv::Mat::eye(cv::Size(4,3), CV_64F);
-
 vector<KeyPoint> keyp1, keyp2;
 Mat desc1, desc2;
 vector<DMatch> matches;
@@ -48,16 +50,13 @@ float rmse;
 int avgmatches = 0;
 int nrmatches = 0;
 
-double h = 1.65; //Camera height Kitti dataset
-double dim = 1000;
-double dimShow = 1000;
+double dim = 700;
+double dimShow = 700;
 double showScale = dimShow/dim;
 double prevscale = 0;
 double alpha = 0.5;
-//cv::Rect crop_region(0, 0, 1280, 720);
-//cv::Rect crop_region(300, 400, 680, 310);
+
 cv::Rect crop_region(414, 175, 414, 200);
-//cv::Rect crop_region(414, 175, 414, 200);
 
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
@@ -75,12 +74,6 @@ Ptr<ORB> orbis = cv::ORB::create(1500,
 		ORB::FAST_SCORE,
 	  31, // Descriptor patch size
 		9);
-
-double P_0[3][3] = {{1,0,0},
-		                {0,0,-h},
-		                {0,1,0}};
-Mat P0 = Mat(3,3,CV_64F,P_0);
-Mat P;
 
 double K_ar[3][3] = {
   {612.84,0,639.31},
@@ -101,7 +94,6 @@ double K_ar[3][3] = {
                             -2.255640745162964,
                              1.3926784992218018};
   Mat dist = Mat(8,1,CV_64F,distCoeffs);
-	Mat H = K*P0;
 
 using namespace cv;
 using namespace std;
@@ -114,7 +106,6 @@ public:
     : it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
-    //image_sub_ = it_.subscribe("/myumi_001/rgb/image_raw", 1, &ImageConverter::imageCb, this);
 		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", 1, &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/image_converter/output_video", 1);
     cv::namedWindow(OPENCV_WINDOW);
@@ -123,7 +114,6 @@ public:
   {
     cv::destroyWindow(OPENCV_WINDOW);
   }
-
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
     cv_bridge::CvImagePtr cv_ptr;
@@ -171,27 +161,20 @@ public:
 		nrmatches = nrmatches + matches.size();
 		avgmatches = nrmatches/iterations;
 		cout << "Average number of matches: " << avgmatches << endl;
+		double avgDist = avgMatchDist(matches);
+		cout << "Average match distance: " << avgDist << endl;
 		cout << endl;
-
-/*
-		PkHat = scaleUpdate(Kitti, Rprev, R, tprev, t);
-		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
-		cv::triangulatePoints(Kitti*Pk_1Hat, PkHat, scene1, scene2, point3d);
-
-		if (matches.size() < 300){
-			getScale(point3d, PkHat, matches, keyp2, alpha, prevscale);
-			//cout << endl;
-		}
-*/
-
-		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1)
+		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
 		{
-		Rodrigues(R, rot, noArray());
+		Rodrigues(Rpos, rot, noArray());
 		rotDiff = rot.at<double>(1,0)*180/3.14159 - prevYaw;
+		cout << "Rotation: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
+		/*
 		if(rotDiff > 20){
 			R = Rprev.clone();
 			cout << "R matrix out of bounds: " << endl;
 		}
+		*/
 		//cout << "Rotation difference: " << rotDiff << endl;
     tpos = tpos + Rpos*t;
 		Rpos = R*Rpos;
@@ -201,7 +184,7 @@ public:
     X = 5*tpos.at<double>(0,0);
     Y = 5*tpos.at<double>(0,2);
     //cout << "Iterations: " << iterations << endl;
-		circle(trajectory, Point(X + dim/2,Y + dim/2), 1, Scalar(0,0,255), 1);
+		circle(trajectory, Point(X + dim/2,Y + dim/2), 2, Scalar(0,0,255), 2);
     cv::resize(trajectory, traj, cv::Size(), showScale, showScale);
     imshow( "Trajectory", traj );
     }
@@ -226,7 +209,11 @@ private:
   image_transport::ImageTransport it_;
   image_transport::Subscriber image_sub_;
   image_transport::Publisher image_pub_;
+
 };
+
+
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "image_converter");
