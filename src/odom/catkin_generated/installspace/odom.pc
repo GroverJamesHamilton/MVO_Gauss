@@ -1,4 +1,4 @@
-prefix=/home/labbare/abb_ws/install
+prefix=/usr/local
 
 Name: odom
 Description: Description of odom

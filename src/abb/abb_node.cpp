@@ -29,12 +29,9 @@ double tran[3][1] = {{0},{0},{0}};
 double rot_help[3][1] = {{0},{0},{0}};
 Mat Rpos = cv::Mat::eye(3,3,CV_64F);
 Mat Rprev = cv::Mat::eye(3,3,CV_64F);
-Mat Rtemp = cv::Mat::eye(3,3,CV_64F);
 Mat tpos = Mat(3,1,CV_64F,tran);
 Mat ttemp = tpos;
 Mat rot = cv::Mat::eye(3,3,CV_64F);
-double fail;
-Mat RodRot;
 Mat t = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 Mat tprev = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 
@@ -44,8 +41,7 @@ vector<DMatch> matches;
 cv::Mat point3d;
 vector<Point2d> scene1, scene2;
 
-float roll, pitch, yaw, len;
-float rmse;
+float yaw;
 
 int avgmatches = 0;
 int nrmatches = 0;
@@ -107,7 +103,7 @@ public:
   {
     // Subscribe to input video feed and publish output video feed
 		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", 1, &ImageConverter::imageCb, this);
-    image_pub_ = it_.advertise("/image_converter/output_video", 1);
+
     cv::namedWindow(OPENCV_WINDOW);
   }
   ~ImageConverter()
@@ -168,7 +164,8 @@ public:
 		{
 		Rodrigues(Rpos, rot, noArray());
 		rotDiff = rot.at<double>(1,0)*180/3.14159 - prevYaw;
-		cout << "Rotation: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
+		yaw = rot.at<double>(1,0);
+		cout << "Rotation in degrees: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
 		/*
 		if(rotDiff > 20){
 			R = Rprev.clone();
@@ -183,6 +180,31 @@ public:
 
     X = 5*tpos.at<double>(0,0);
     Y = 5*tpos.at<double>(0,2);
+
+		cout << "X pos: " << -tpos.at<double>(0,2) << endl;
+		cout << "Y pos: " << tpos.at<double>(0,0) << endl;
+
+		// The simulation time
+		auto current_time = ros::Time::now();
+		//since all odometry is 6DOF we'll need a quaternion created from yaw
+    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(yaw);
+
+		//We'll publish the odometry message over ROS
+    odom.header.stamp = current_time;
+    odom.header.frame_id = "odom";
+
+    //set the position
+    odom.pose.pose.position.x = -tpos.at<double>(0,2);
+    odom.pose.pose.position.y = tpos.at<double>(0,0);
+    odom.pose.pose.position.z = 0.0;
+    odom.pose.pose.orientation = odom_quat;
+
+		cout << "Yaw: " << yaw << endl;
+		cout << "odom_quat: " << odom_quat << endl;
+
+    //publish the message
+    odom_pub_.publish(odom);
+
     //cout << "Iterations: " << iterations << endl;
 		circle(trajectory, Point(X + dim/2,Y + dim/2), 2, Scalar(0,0,255), 2);
     cv::resize(trajectory, traj, cv::Size(), showScale, showScale);
@@ -202,17 +224,18 @@ public:
     //cv::imshow(OPENCV_WINDOW, frame);
     cv::waitKey(1);
     // Output modified video stream
-    image_pub_.publish(cv_ptr->toImageMsg());
+    //image_pub_.publish(cv_ptr->toImageMsg());
+
   }
 private:
   ros::NodeHandle nh_;
+	ros::NodeHandle n;
+	ros::Publisher odom_pub_ = n.advertise<nav_msgs::Odometry>("odom", 1);
+	nav_msgs::Odometry odom;
   image_transport::ImageTransport it_;
   image_transport::Subscriber image_sub_;
-  image_transport::Publisher image_pub_;
-
+  //image_transport::Publisher image_pub_;
 };
-
-
 
 int main(int argc, char** argv)
 {
