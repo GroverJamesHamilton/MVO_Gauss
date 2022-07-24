@@ -320,7 +320,7 @@ double W, Y, median, average, newScale;
 	  }
 		}
 size = Yval.size();
-cout << "Size: " << size << endl;
+//cout << "Size: " << size << endl;
 //cout << "Yval sorted: " << endl;
 sort(Yval.begin(), Yval.end());
 for(int i = 0; i < size; i++){
@@ -356,7 +356,12 @@ else
 }
 
 newScale = (1 - alpha)*prevScale + alpha*height/average;
-cout << "Average :" << average << endl;
+if(size == 0)
+{
+	newScale = prevScale;
+	cout << "Failed" << endl;
+}
+//cout << "Average :" << average << endl;
 //cout << "Current scale: " << newScale << endl;
 
 return average;

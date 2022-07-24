@@ -161,7 +161,7 @@ public:
 		nrmatches = nrmatches + matches.size();
 		avgmatches = nrmatches/iterations;
 		double avgDist = avgMatchDist(matches);
-		cout << endl;
+		//cout << endl;
 
 		PkHat = scaleUpdate(Kitti, Rprev, R, tprev, t);
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
