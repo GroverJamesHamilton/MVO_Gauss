@@ -54,7 +54,7 @@ double dimShow = 700;
 double showScale = dimShow/dim;
 double curScale = 1;
 double prevScale = 1;
-double alpha = 0.5;
+double alpha = 0.1;
 double camHeight = 1.65;
 
 cv::Rect crop_region(414, 175, 414, 200);
@@ -153,7 +153,7 @@ public:
     {
     matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
 		//matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
-		cout << "Matches size: " << matches.size() << endl;
+		//cout << "Matches size: " << matches.size() << endl;
 
     tie(t,R) = tranRot(keyp1, keyp2, matches);
 		//hconcat(R,t,P);
@@ -168,9 +168,10 @@ public:
 		cv::triangulatePoints(Kitti*Pk_1Hat, PkHat, scene1, scene2, point3d);
 		if(matches.size() < 500)
 		{
-		getScale(point3d, PkHat, matches, keyp2);
+		curScale = getScale(point3d, PkHat, matches, keyp2, prevScale, alpha, camHeight);
+		prevScale = curScale;
 	  }
-		//prevScale = curScale;
+
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
 		{
 		Rodrigues(Rpos, rot, noArray());

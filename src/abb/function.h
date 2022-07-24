@@ -38,7 +38,7 @@ tuple <float, float, float> rotationMatrixToEulerAngles(Mat &R);
 void performSUACE(Mat & src, Mat & dst, int distance, double sigma);
 Mat scaleUpdate(Mat K, Mat R_, Mat R, Mat t_, Mat t);
 tuple <vector<Point2d>, vector<Point2d>> getPixLoc(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<DMatch> matches);
-void getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2);
+double getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2, double prevScale, double alpha, double height);
 double avg(vector<double> v);
 double variance(vector<double> v,double mean);
 double avgMatchDist(vector<DMatch> matches);
