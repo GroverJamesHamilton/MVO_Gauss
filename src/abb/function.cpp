@@ -296,16 +296,14 @@ double variance(vector<double> v,double mean)
 }
 
 void getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2){
-//int size;
-//int outlierFactor = 2;
+int size;
+int outlierFactor = 2;
 //Mat xj = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 //Mat Xj = cv::Mat::zeros(cv::Size(1,4), CV_64F);
-vector<double> Yval;
+vector<double> Yval, YvalFiltered;
 double W, Y, median, average;
 	for(int i = 0; i<point3d.cols; i++){
 		W = point3d.at<double>(i,3);
-		cout << "W: " << W << endl;
-/*
 
 		if(W != 0)
 		{
@@ -316,21 +314,18 @@ double W, Y, median, average;
 
 		if(Y > 0.1 && Y < 25 && Y != 1 && W > 1e-20)
 		{
-			cout << "Ok value: " << Y << endl;
+			//cout << "Ok value: " << Y << endl;
 			Yval.push_back(Y);
 		}
 	  }
-	*/}
-}
-	/*
+		}
 size = Yval.size();
-cout << "Yval sorted: " << endl;
+//cout << "Yval sorted: " << endl;
 sort(Yval.begin(), Yval.end());
 for(int i = 0; i < size; i++){
-cout << Yval[i] << endl;
-*/
-//}
-/*
+//cout << Yval[i] << endl;
+}
+
 if(size > 2)
 {
 if(size % 2 == 0)
@@ -361,17 +356,10 @@ else
 {
 	average = avg(Yval);
 }
-*/
 //average = 1.5;
 //return average;
-//}
-/*
-double average = avg(Yval);
-cout << "Mean Y: " << average << endl;
-double var = variance(Yval, average);
-cout << "Variance Y: " << var << endl;
-	cout << endl;
-} */
+}
+
 
 double avgMatchDist(vector<DMatch> matches)
 {

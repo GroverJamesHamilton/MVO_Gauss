@@ -166,7 +166,10 @@ public:
 		PkHat = scaleUpdate(Kitti, Rprev, R, tprev, t);
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
 		cv::triangulatePoints(Kitti*Pk_1Hat, PkHat, scene1, scene2, point3d);
+		if(matches.size() < 500)
+		{
 		getScale(point3d, PkHat, matches, keyp2);
+	  }
 		//prevScale = curScale;
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
 		{
