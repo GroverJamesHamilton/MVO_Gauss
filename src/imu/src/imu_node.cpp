@@ -1,6 +1,8 @@
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
 
+using namespace std;
+
 void chatterCallback(const sensor_msgs::Imu::ConstPtr& msg)
 {
   //ROS_INFO("Imu Seq: [%d]", msg->header.seq);
@@ -11,7 +13,7 @@ void chatterCallback(const sensor_msgs::Imu::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-
+  //cout << "Hello" << endl;
   ros::init(argc, argv, "imu_node");
   ros::NodeHandle n;
   ros::Subscriber sub = n.subscribe("/kitti/oxts/imu", 1000, chatterCallback);

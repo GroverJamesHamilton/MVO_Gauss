@@ -22,28 +22,6 @@ Mat ORB_(Mat image, vector<KeyPoint> keypoints) {
 	return descriptors;
 }
 //
-//// BRIEF
-//
-/*
-Mat BRIEF(Mat image, vector<KeyPoint> keypoints) {
-	Mat gray;
-	//Convert to grayscale
-	cvtColor(image, gray, cv::COLOR_BGR2GRAY);
-	Mat descriptors;
-	if (keypoints.size() > 3) {
-	Ptr<BriefDescriptorExtractor> desc = BriefDescriptorExtractor::create();
-	// Record start time
-  auto begin = chrono::high_resolution_clock::now();
-	desc->compute(image, keypoints, descriptors);
-	// Record end time
-	auto end = chrono::high_resolution_clock::now();
-	auto dur = end - begin;
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-	//cout << "Calculation time BRIEF:" << ms << "ms" << endl;
-}
-	return descriptors;
-}*/
-//
 // FLANN
 //
 Mat FLANN(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio) {
@@ -317,71 +295,83 @@ double variance(vector<double> v,double mean)
 				return var;
 }
 
-void getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2, double alpha, double prevscale){
-
-int zeros = 0;
-int ones = 0;
-int oks = 0;
-int infs = 0;
-
-Mat xj = cv::Mat::zeros(cv::Size(1,3), CV_64F);
-Mat Xj = cv::Mat::zeros(cv::Size(1,4), CV_64F);
-
+void getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2){
+//int size;
+//int outlierFactor = 2;
+//Mat xj = cv::Mat::zeros(cv::Size(1,3), CV_64F);
+//Mat Xj = cv::Mat::zeros(cv::Size(1,4), CV_64F);
 vector<double> Yval;
-double W, X, Y, Z, er;
+double W, Y, median, average;
 	for(int i = 0; i<point3d.cols; i++){
-
 		W = point3d.at<double>(i,3);
+		cout << "W: " << W << endl;
+/*
+
 		if(W != 0)
 		{
 		auto pix = keyp2[matches[i].trainIdx].pt;
-		X = point3d.at<double>(i,0)/W;
+		//X = point3d.at<double>(i,0)/W;
 		Y = point3d.at<double>(i,1)/W;
-		Z = point3d.at<double>(i,2)/W;
+		//Z = point3d.at<double>(i,2)/W;
 
-		if(Y > 0.005 && Y < 50 && Y != 1 && W > 1e-20)//&& abs(Y-1) > 0.001
+		if(Y > 0.1 && Y < 25 && Y != 1 && W > 1e-20)
 		{
 			cout << "Ok value: " << Y << endl;
-			//cout << X << "___" << Y << "___" << Z << endl;
-			/*
-			Xj.at<double>(0,0) = X;
-			Xj.at<double>(0,1) = Y;
-			Xj.at<double>(0,2) = Z;
-			Xj.at<double>(0,3) = 1;
-
-
-			xj.at<double>(0,0) = pix.x;
-			xj.at<double>(0,1) = pix.y;
-			xj.at<double>(0,2) = 1;
-
-			cout << xj - PkHat*Xj << endl;
-			cout << endl;
-			*/
 			Yval.push_back(Y);
 		}
 	  }
+	*/}
+}
+	/*
+size = Yval.size();
+cout << "Yval sorted: " << endl;
+sort(Yval.begin(), Yval.end());
+for(int i = 0; i < size; i++){
+cout << Yval[i] << endl;
+*/
+//}
+/*
+if(size > 2)
+{
+if(size % 2 == 0)
+{
+	median = (Yval[size/2-1] + Yval[size/2])/2;
+	//cout << "Even number, size: " << size << endl;
+	//cout << "Median : " << median << endl;
+}
+if(size % 2 == 1)
+{
+	median = Yval[Yval.size()/2];
+	//cout << "Odd number, size: " << size << endl;
+	//cout << "Median : " << median << endl;
+}
+//cout << "Yval outliers removed: " << endl;
+for(int i = 0; i < size; i++){
+	if(Yval[i] < outlierFactor*median && Yval[i] > median/outlierFactor)
+	{
+		YvalFiltered.push_back(Yval[i]);
+		//cout << Yval[i] << endl;
 	}
+}
+average = avg(YvalFiltered);
+cout << "Average : " << average << endl;
+}
 
+else
+{
+	average = avg(Yval);
+}
+*/
+//average = 1.5;
+//return average;
+//}
+/*
 double average = avg(Yval);
 cout << "Mean Y: " << average << endl;
 double var = variance(Yval, average);
 cout << "Variance Y: " << var << endl;
 	cout << endl;
-}
-
-/*
-Xj.at<double>(0,0) = X;
-Xj.at<double>(0,1) = Y;
-Xj.at<double>(0,2) = Z;
-Xj.at<double>(0,3) = 1;
-
-xj.at<double>(0,0) = pix.x;
-xj.at<double>(0,1) = pix.y;
-xj.at<double>(0,2) = 1;
-
-cout << xj - PkHat*Xj << endl;
-cout << endl;
-*/
+} */
 
 double avgMatchDist(vector<DMatch> matches)
 {
@@ -394,29 +384,6 @@ double sum = 0;
 	avg = sum/matches.size();
 	return avg;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //
 //// SUACE - Speeded Up Adaptive Constrast Enhancement filter
 //

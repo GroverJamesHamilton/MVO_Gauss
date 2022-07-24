@@ -35,6 +35,9 @@ Mat rot = cv::Mat::eye(3,3,CV_64F);
 Mat t = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 Mat tprev = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 
+Mat PkHat;
+Mat Pk_1Hat = cv::Mat::eye(cv::Size(4,3), CV_64F);
+
 vector<KeyPoint> keyp1, keyp2;
 Mat desc1, desc2;
 vector<DMatch> matches;
@@ -49,8 +52,10 @@ int nrmatches = 0;
 double dim = 700;
 double dimShow = 700;
 double showScale = dimShow/dim;
-double prevscale = 0;
+double curScale = 1;
+double prevScale = 1;
 double alpha = 0.5;
+double camHeight = 1.65;
 
 cv::Rect crop_region(414, 175, 414, 200);
 
@@ -149,23 +154,26 @@ public:
     matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
 		//matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
 		cout << "Matches size: " << matches.size() << endl;
-		//cout << matches.size() << ",";
 
     tie(t,R) = tranRot(keyp1, keyp2, matches);
 		//hconcat(R,t,P);
 
 		nrmatches = nrmatches + matches.size();
 		avgmatches = nrmatches/iterations;
-		cout << "Average number of matches: " << avgmatches << endl;
 		double avgDist = avgMatchDist(matches);
-		cout << "Average match distance: " << avgDist << endl;
 		cout << endl;
+
+		PkHat = scaleUpdate(Kitti, Rprev, R, tprev, t);
+		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
+		cv::triangulatePoints(Kitti*Pk_1Hat, PkHat, scene1, scene2, point3d);
+		getScale(point3d, PkHat, matches, keyp2);
+		//prevScale = curScale;
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
 		{
 		Rodrigues(Rpos, rot, noArray());
 		rotDiff = rot.at<double>(1,0)*180/3.14159 - prevYaw;
 		yaw = rot.at<double>(1,0);
-		cout << "Rotation in degrees: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
+		//cout << "Rotation in degrees: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
 		/*
 		if(rotDiff > 20){
 			R = Rprev.clone();
@@ -180,9 +188,6 @@ public:
 
     X = 5*tpos.at<double>(0,0);
     Y = 5*tpos.at<double>(0,2);
-
-		cout << "X pos: " << -tpos.at<double>(0,2) << endl;
-		cout << "Y pos: " << tpos.at<double>(0,0) << endl;
 
 		// The simulation time
 		auto current_time = ros::Time::now();
@@ -199,8 +204,14 @@ public:
     odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = odom_quat;
 
-		cout << "Yaw: " << yaw << endl;
-		cout << "odom_quat: " << odom_quat << endl;
+		//cout << "Yaw: " << yaw << endl;
+		//cout << "odom_quat: " << endl << odom_quat << endl;
+
+		//cout << "X pos: " << -tpos.at<double>(0,2) << endl;
+		//cout << "Y pos: " << tpos.at<double>(0,0) << endl;
+
+		//cout << "Average number of matches: " << avgmatches << endl;
+		//cout << "Average match distance: " << avgDist << endl;
 
     //publish the message
     odom_pub_.publish(odom);

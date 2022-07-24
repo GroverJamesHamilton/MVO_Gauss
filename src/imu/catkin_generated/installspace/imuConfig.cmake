@@ -68,13 +68,13 @@ set(imu_CONFIG_INCLUDED TRUE)
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
   set(imu_SOURCE_PREFIX /home/labbare/abb_ws/src/imu)
-  set(imu_DEVEL_PREFIX /home/labbare/abb_ws/devel)
+  set(imu_DEVEL_PREFIX /home/labbare/abb_ws/src/imu/devel)
   set(imu_INSTALL_PREFIX "")
   set(imu_PREFIX ${imu_DEVEL_PREFIX})
 else()
   set(imu_SOURCE_PREFIX "")
   set(imu_DEVEL_PREFIX "")
-  set(imu_INSTALL_PREFIX /home/labbare/abb_ws/install)
+  set(imu_INSTALL_PREFIX /usr/local)
   set(imu_PREFIX ${imu_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/labbare/abb_ws/install/lib;/home/labbare/abb_ws/src/devel/lib;/home/labbare/abb_ws/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /usr/local/lib;/home/labbare/abb_ws/src/devel/lib;/home/labbare/abb_ws/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

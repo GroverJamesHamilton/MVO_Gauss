@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "/home/labbare/abb_ws/devel/lib/imu/imu_node"
-  "/home/labbare/abb_ws/devel/lib/imu/imu_node.pdb"
   "CMakeFiles/imu_node.dir/src/imu_node.cpp.o"
+  "devel/lib/imu/imu_node"
+  "devel/lib/imu/imu_node.pdb"
 )
 
 # Per-language clean rules from dependency scanning.
