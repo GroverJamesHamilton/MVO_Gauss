@@ -53,7 +53,7 @@ double dim = 700;
 double dimShow = 700;
 double showScale = dimShow/dim;
 double curScale = 1;
-double prevScale = 1;
+double prevScale = 1.4;
 double alpha = 0.1;
 double camHeight = 1.65;
 
@@ -171,7 +171,6 @@ public:
 		curScale = getScale(point3d, PkHat, matches, keyp2, prevScale, alpha, camHeight);
 		prevScale = curScale;
 	  }
-
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
 		{
 		Rodrigues(Rpos, rot, noArray());

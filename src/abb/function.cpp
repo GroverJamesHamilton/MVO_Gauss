@@ -298,21 +298,15 @@ double variance(vector<double> v,double mean)
 double getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2, double prevScale, double alpha, double height){
 int size;
 int outlierFactor = 2;
-//Mat xj = cv::Mat::zeros(cv::Size(1,3), CV_64F);
-//Mat Xj = cv::Mat::zeros(cv::Size(1,4), CV_64F);
 vector<double> Yval, YvalFiltered;
 double W, Y, median, average, newScale;
 	for(int i = 0; i<point3d.cols; i++){
 		W = point3d.at<double>(i,3);
-
 		if(W != 0)
 		{
 		auto pix = keyp2[matches[i].trainIdx].pt;
-		//X = point3d.at<double>(i,0)/W;
 		Y = point3d.at<double>(i,1)/W;
-		//Z = point3d.at<double>(i,2)/W;
-
-		if(Y > 0.01 && Y < 50 && Y != 1 && W > 1e-20)
+		if(Y > 0.7 && Y < 3 && Y != 1 && W > 1e-300)
 		{
 			//cout << "Ok value: " << Y << endl;
 			Yval.push_back(Y);
@@ -321,12 +315,13 @@ double W, Y, median, average, newScale;
 		}
 size = Yval.size();
 //cout << "Size: " << size << endl;
-//cout << "Yval sorted: " << endl;
+/*
+cout << "Yval sorted: " << endl;
 sort(Yval.begin(), Yval.end());
 for(int i = 0; i < size; i++){
-//cout << Yval[i] << endl;
+cout << Yval[i] << endl;
 }
-
+*/
 if(size > 2)
 {
 if(size % 2 == 0)
@@ -349,22 +344,22 @@ for(int i = 0; i < size; i++){
 }
 average = avg(YvalFiltered);
 }
-
 else
 {
 	average = avg(Yval);
 }
-
-newScale = (1 - alpha)*prevScale + alpha*height/average;
 if(size == 0)
 {
-	newScale = prevScale;
-	cout << "Failed" << endl;
+	average = height/prevScale;
+	//cout << "Failed" << endl;
 }
+cout << "Size: " << size << endl;
+cout << "Average: " << average << endl;
+newScale = (1 - alpha)*prevScale + alpha*height/average;
 //cout << "Average :" << average << endl;
-//cout << "Current scale: " << newScale << endl;
+cout << "newScale: " << newScale << endl;
 
-return average;
+return newScale;
 }
 
 
