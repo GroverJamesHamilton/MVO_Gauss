@@ -32,6 +32,7 @@ Mat Rprev = cv::Mat::eye(3,3,CV_64F);
 Mat tpos = Mat(3,1,CV_64F,tran);
 Mat ttemp = tpos;
 Mat rot = cv::Mat::eye(3,3,CV_64F);
+Mat rotDiff = cv::Mat::eye(3,3,CV_64F);
 Mat t = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 Mat tprev = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 
@@ -44,7 +45,9 @@ vector<DMatch> matches;
 cv::Mat point3d;
 vector<Point2d> scene1, scene2;
 
-float yaw;
+float yaw = 0;
+float yawDiff = 0;
+float yawVel;
 
 int avgmatches = 0;
 int nrmatches = 0;
@@ -52,7 +55,7 @@ int nrmatches = 0;
 double dim = 700;
 double dimShow = 700;
 double showScale = dimShow/dim;
-double curScale = 1;
+double curScale = 1.4;
 double prevScale = 1.4;
 double alpha = 0.1;
 double camHeight = 1.65;
@@ -61,10 +64,8 @@ cv::Rect crop_region(414, 175, 414, 200);
 
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
-int X,Y;
-
-double prevYaw = 0;
-double rotDiff = 0;
+int X,Y; //Pixel location to print trajectory
+double x,y,vx,vy;
 
 Ptr<ORB> orbis = cv::ORB::create(1500,
 		1.2f,
@@ -171,48 +172,54 @@ public:
 		curScale = getScale(point3d, PkHat, matches, keyp2, prevScale, alpha, camHeight);
 		prevScale = curScale;
 	  }
+		auto velocity = curScale/0.1;
+		cout << "Total velocity: " << velocity << " m/s" << endl;
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
 		{
 		Rodrigues(Rpos, rot, noArray());
-		rotDiff = rot.at<double>(1,0)*180/3.14159 - prevYaw;
+		Rodrigues(R, rotDiff, noArray());
+		yawDiff = rotDiff.at<double>(1,0);
 		yaw = rot.at<double>(1,0);
 		//cout << "Rotation in degrees: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
-		/*
-		if(rotDiff > 20){
-			R = Rprev.clone();
-			cout << "R matrix out of bounds: " << endl;
-		}
-		*/
-		//cout << "Rotation difference: " << rotDiff << endl;
-    tpos = tpos + Rpos*t;
+    tpos = tpos + Rpos*t*curScale;
 		Rpos = R*Rpos;
-		//cout << endl;
-	}
+		}
+		if(iterations > 1)
+		{
+    X = 2*tpos.at<double>(0,0);
+    Y = 2*tpos.at<double>(0,2);
 
-    X = 5*tpos.at<double>(0,0);
-    Y = 5*tpos.at<double>(0,2);
+		x = -tpos.at<double>(0,2);
+		y = tpos.at<double>(0,0);
 
-		// The simulation time
-		auto current_time = ros::Time::now();
+		vx = -t.at<double>(0,2)*velocity;
+		vy = t.at<double>(0,0)*velocity;
+
+		yawVel = yawDiff/0.1;
+
+		//cout << "Xpos: " << x << endl;
+		//cout << "Ypos: " << y << endl;
+		//cout << "xvec: " << vx << endl;
+		//cout << "yvec: " << vy << endl;
+		//cout << "Yaw: " << yaw*180/3.14159 << endl;
+		//cout << "Yaw difference: " << yawDiff*180/3.14159 << endl;
+	  }
 		//since all odometry is 6DOF we'll need a quaternion created from yaw
     geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(yaw);
 
 		//We'll publish the odometry message over ROS
-    odom.header.stamp = current_time;
     odom.header.frame_id = "odom";
 
     //set the position
-    odom.pose.pose.position.x = -tpos.at<double>(0,2);
-    odom.pose.pose.position.y = tpos.at<double>(0,0);
+    odom.pose.pose.position.x = x;
+    odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = odom_quat;
+		odom.twist.twist.linear.x = vx;
+		odom.twist.twist.linear.y = vy;
+		odom.twist.twist.angular.z = yawVel;
 
 		//cout << "Yaw: " << yaw << endl;
-		//cout << "odom_quat: " << endl << odom_quat << endl;
-
-		//cout << "X pos: " << -tpos.at<double>(0,2) << endl;
-		//cout << "Y pos: " << tpos.at<double>(0,0) << endl;
-
 		//cout << "Average number of matches: " << avgmatches << endl;
 		//cout << "Average match distance: " << avgDist << endl;
 
