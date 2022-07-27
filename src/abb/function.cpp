@@ -125,7 +125,7 @@ tuple <Mat, Mat> tranRot(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<
 	 	 {718.856,0,607.1928},
 	 	 {0,718.856,185.2157},
 	 	 {0,0,1}};
-		Mat K = Mat(3,3,CV_64F,K_kitti);
+		Mat K = Mat(3,3,CV_64F,K_ar);
 if (matches.size() > 5) {
 // Record start time
 auto begin = chrono::high_resolution_clock::now();
@@ -306,7 +306,7 @@ double W, Y, median, average, newScale;
 		{
 		auto pix = keyp2[matches[i].trainIdx].pt;
 		Y = point3d.at<double>(i,1)/W;
-		if(Y > 0.7 && Y < 3 && Y != 1 && W > 1e-300)
+		if(Y > 40 && Y < 4000 && Y != 1 && W > 1e-300)
 		{
 			//cout << "Ok value: " << Y << endl;
 			Yval.push_back(Y);
@@ -353,11 +353,10 @@ if(size == 0)
 	average = height/prevScale;
 	//cout << "Failed" << endl;
 }
-cout << "Size: " << size << endl;
-cout << "Average: " << average << endl;
+//cout << "Size: " << size << endl;
+//cout << "Average: " << average << endl;
 newScale = (1 - alpha)*prevScale + alpha*height/average;
-//cout << "Average :" << average << endl;
-cout << "newScale: " << newScale << endl;
+//cout << "newScale: " << newScale << endl;
 
 return newScale;
 }

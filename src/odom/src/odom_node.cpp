@@ -1,8 +1,10 @@
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h"
+#include <iostream>
 
 //using namespace cv;
 using namespace std;
+int iteration = 1;
 
 /**
  * This tutorial demonstrates simple receipt of position and speed of the Evarobot over the ROS system.
@@ -14,15 +16,22 @@ using namespace std;
  */
 void chatterCallback(const nav_msgs::Odometry::ConstPtr& msg)
 {
-  ROS_INFO("Seq: [%d]", msg->header.seq);
-  ROS_INFO("Position-> x: [%f], y: [%f], z: [%f]", msg->pose.pose.position.x,msg->pose.pose.position.y, msg->pose.pose.position.z);
-  ROS_INFO("Orientation-> x: [%f], y: [%f], z: [%f], w: [%f]", msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
+  //ROS_INFO("Seq: [%d]", msg->header.seq);
+  //ROS_INFO("Position-> x: [%f], y: [%f], z: [%f]", msg->pose.pose.position.x,msg->pose.pose.position.y, msg->pose.pose.position.z);
+  //ROS_INFO("[%f], y: [%f]", msg->pose.pose.position.x,msg->pose.pose.position.y);
+  //ROS_INFO("Orientation-> x: [%f], y: [%f], z: [%f], w: [%f]", msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
   //ROS_INFO("Vel-> Linear: [%f], Angular: [%f]", msg->twist.twist.linear.x,msg->twist.twist.angular.z);
+ if(iteration % 25 == 0)
+  {
+    cout << msg->pose.pose.position.x + 3.43921 << ", " << msg->pose.pose.position.y + 0.701243 << ";" << endl;
+  }
+  //cout << "Iterations: " << iteration << endl;
+  iteration++;
 }
 
 int main(int argc, char **argv)
 {
-  cout << "test" << endl;
+  //cout << "testing" << endl;
   /**
    * The ros::init() function needs to see argc and argv so that it can perform
    * any ROS arguments and name remapping that were provided at the command line.
@@ -58,7 +67,7 @@ int main(int argc, char **argv)
    * away the oldest ones.
    */
   //ros::Subscriber sub = n.subscribe("/myumi_005/base/state_controller/odom", 1000, chatterCallback);
-  ros::Subscriber sub = n.subscribe("odom", 1000, chatterCallback);
+  ros::Subscriber sub = n.subscribe("/myumi_005/base/state_controller/odom", 1000, chatterCallback);
 
   /**
    * ros::spin() will enter a loop, pumping callbacks.  With this version, all

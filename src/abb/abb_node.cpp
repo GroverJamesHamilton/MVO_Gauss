@@ -47,20 +47,22 @@ vector<Point2d> scene1, scene2;
 
 float yaw = 0;
 float yawDiff = 0;
+float yawdiffdeg = yawDiff*180/3.14159265359;
 float yawVel;
 
 int avgmatches = 0;
 int nrmatches = 0;
 
-double dim = 700;
+double dim = 1500;
 double dimShow = 700;
 double showScale = dimShow/dim;
-double curScale = 1.4;
-double prevScale = 1.4;
+double curScale = 0.01;
+double prevScale = 0.01;
 double alpha = 0.1;
-double camHeight = 1.65;
+double camHeight = 1.35;
 
-cv::Rect crop_region(414, 175, 414, 200);
+cv::Rect crop_region(430, 360, 420, 340);
+//cv::Rect crop_region(30, 20, 1220, 680); //Removes black space left from undistortion
 
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
@@ -74,32 +76,27 @@ Ptr<ORB> orbis = cv::ORB::create(1500,
 		0,
 		3,
 		ORB::FAST_SCORE,
-	  31, // Descriptor patch size
-		9);
+	  31, // Descriptor patch size, 31 is so far best estimate
+		5);
 
-double K_ar[3][3] = {
+double K_help[3][3] = {
   {612.84,0,639.31},
   {0,612.8,367.35},
   {0,0,1}};
-	double K_kitti[3][3] = {
-	  {718.856,0,607.1928},
-	  {0,718.856,185.2157},
-	  {0,0,1}};
-  Mat K = Mat(3,3,CV_64F,K_ar);
-	Mat Kitti = Mat(3,3,CV_64F,K_kitti);
+  Mat K = Mat(3,3,CV_64F,K_help);
   double distCoeffs[8][1] = {0.3120601177215576,
-                            -2.4365458488464355,
-                             0.00019845466886181384,
-                            -0.00034599119680933654,
-                             1.4696191549301147,
-                             0.19208934903144836,
-                            -2.255640745162964,
-                             1.3926784992218018};
+	 													-2.4365458488464355,
+	 													 0.00019845466886181384,
+	 												  -0.00034599119680933654,
+	 												   1.4696191549301147,
+	 											     0.19208934903144836,
+	 										      -2.255640745162964,
+	 									         1.3926784992218018};
   Mat dist = Mat(8,1,CV_64F,distCoeffs);
 
 using namespace cv;
 using namespace std;
-static const std::string OPENCV_WINDOW = "Image Window";
+//static const std::string OPENCV_WINDOW = "Image Window";
 
 class ImageConverter
 {
@@ -108,13 +105,13 @@ public:
     : it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
-		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", 1, &ImageConverter::imageCb, this);
+		image_sub_ = it_.subscribe("/myumi_005/rgb/image_raw", 1000, &ImageConverter::imageCb, this);
 
-    cv::namedWindow(OPENCV_WINDOW);
+    //cv::namedWindow(OPENCV_WINDOW);
   }
   ~ImageConverter()
   {
-    cv::destroyWindow(OPENCV_WINDOW);
+    //cv::destroyWindow(OPENCV_WINDOW);
   }
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
@@ -130,7 +127,7 @@ public:
     }
 	//-------------------------------------------------------------------------------------------
   //You can test your algorithm here.
-
+	auto begin = chrono::high_resolution_clock::now();
 	R.copyTo(Rprev);
 	t.copyTo(tprev);
 
@@ -138,13 +135,11 @@ public:
   {
     oldFrame0 = cv_ptr->image;
     undistort(oldFrame0, oldFrame, K, dist, Mat());
-		//undistort(oldFrame0, oldFrame, Kitti, Mat(), Mat());
 		oldCrop = oldFrame(crop_region);
     orbis->detectAndCompute(oldCrop, noArray(), keyp1, desc1, false);
   }
     frame0 = cv_ptr->image;
     undistort(frame0, frame, K, dist, Mat());
-		//undistort(frame0, frame, Kitti, Mat(), Mat());
 		crop = frame(crop_region);
     orbis->detectAndCompute(crop, noArray(), keyp2, desc2, false);
 
@@ -155,34 +150,44 @@ public:
     matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
 		//matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
 		//cout << "Matches size: " << matches.size() << endl;
+		if(matches.size() < 500)
+		{
+			    tie(t,R) = tranRot(keyp1, keyp2, matches);
+		}
+		else
+		{
+			//cout << "Robot is still" << endl;
+		}
 
-    tie(t,R) = tranRot(keyp1, keyp2, matches);
-		//hconcat(R,t,P);
-
+		//cout << "R matrix: " << R << endl;
 		nrmatches = nrmatches + matches.size();
 		avgmatches = nrmatches/iterations;
 		double avgDist = avgMatchDist(matches);
 		//cout << endl;
 
-		PkHat = scaleUpdate(Kitti, Rprev, R, tprev, t);
-		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
-		cv::triangulatePoints(Kitti*Pk_1Hat, PkHat, scene1, scene2, point3d);
-		if(matches.size() < 500)
-		{
-		curScale = getScale(point3d, PkHat, matches, keyp2, prevScale, alpha, camHeight);
-		prevScale = curScale;
-	  }
 		auto velocity = curScale/0.1;
-		cout << "Total velocity: " << velocity << " m/s" << endl;
-		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
+		//cout << "Total velocity: " << velocity << " m/s" << endl;
+		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 20)
 		{
+			PkHat = scaleUpdate(K, Rprev, R, tprev, t);
+			tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
+			cv::triangulatePoints(K*Pk_1Hat, PkHat, scene1, scene2, point3d);
+			if(matches.size() < 500)
+			{
+			curScale = getScale(point3d, PkHat, matches, keyp2, prevScale, alpha, camHeight);
+			prevScale = curScale;
+			//cout << "Current scale: " << curScale << endl;
+			}
 		Rodrigues(Rpos, rot, noArray());
 		Rodrigues(R, rotDiff, noArray());
 		yawDiff = rotDiff.at<double>(1,0);
 		yaw = rot.at<double>(1,0);
 		//cout << "Rotation in degrees: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
-    tpos = tpos + Rpos*t*curScale;
+		if(abs(yawdiffdeg) < 20)
+		{
+    tpos = tpos + Rpos*t;
 		Rpos = R*Rpos;
+	  }
 		}
 		if(iterations > 1)
 		{
@@ -229,13 +234,25 @@ public:
     //cout << "Iterations: " << iterations << endl;
 		circle(trajectory, Point(X + dim/2,Y + dim/2), 2, Scalar(0,0,255), 2);
     cv::resize(trajectory, traj, cv::Size(), showScale, showScale);
-    imshow( "Trajectory", traj );
+    imshow("Trajectory", traj);
     }
 
 		oldCrop = crop.clone();
   	oldFrame = frame.clone();
     keyp1 = keyp2;
     desc1 = desc2.clone();
+
+		auto end = chrono::high_resolution_clock::now();
+		auto dur = end - begin;
+		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		//cout << "Calculation time: " << ms << "ms" << endl;
+		cout << curScale << ";" << endl;
+		//cout << x << ", " << y << ", " << yaw*180/3.14159265359 << ", " << ms << ";" << endl;
+		auto yawdiffdeg = yawDiff*180/3.14159265359;
+		if(abs(yawdiffdeg) > 10)
+		{
+			//cout << "Yaw difference: " << yawdiffdeg << endl;
+		}
 
   iterations++;
 //cout << "Frame number: " << iterations << endl;
