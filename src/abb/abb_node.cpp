@@ -16,17 +16,17 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/mat.hpp>
-//Own-made functions
+
+//Own-made functions from function.cpp
 #include "function.h"
-#include <fstream>
 
 double iterations = 1;
 Mat oldFrame, oldFrame0, oldFrame1, oldFrame2, frame, frame0, frame1, frame2, crop, oldCrop;
 
+//Below are the rotation and translation matrices used for different purposes
 Mat R = cv::Mat::eye(3,3,CV_64F);
 Mat R0 = cv::Mat::eye(3,3,CV_64F);
 double tran[3][1] = {{0},{0},{0}};
-double rot_help[3][1] = {{0},{0},{0}};
 Mat Rpos = cv::Mat::eye(3,3,CV_64F);
 Mat Rprev = cv::Mat::eye(3,3,CV_64F);
 Mat tpos = Mat(3,1,CV_64F,tran);
@@ -49,8 +49,8 @@ float yaw = 0;
 float yawDiff = 0;
 float yawVel;
 
-int avgmatches = 0;
-int nrmatches = 0;
+int avgMatches = 0;
+int nrMatches = 0;
 
 double dim = 700;
 double dimShow = 700;
@@ -60,8 +60,9 @@ double prevScale = 1.4;
 double alpha = 0.1;
 double camHeight = 1.65;
 
-cv::Rect crop_region(414, 175, 414, 200);
+cv::Rect crop_region(414, 175, 414, 200); //Only a small subset of the frame is extracted
 
+//The printed trajectory
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
 int X,Y; //Pixel location to print trajectory
@@ -76,17 +77,13 @@ Ptr<ORB> orbis = cv::ORB::create(1500,
 		ORB::FAST_SCORE,
 	  31, // Descriptor patch size
 		9);
-
-double K_ar[3][3] = {
-  {612.84,0,639.31},
-  {0,612.8,367.35},
-  {0,0,1}};
-	double K_kitti[3][3] = {
+//The camera matrix dist. coeffs for the KITTI dataset
+	double kittiCamMatrix[3][3] = {
 	  {718.856,0,607.1928},
 	  {0,718.856,185.2157},
 	  {0,0,1}};
-  Mat K = Mat(3,3,CV_64F,K_ar);
-	Mat Kitti = Mat(3,3,CV_64F,K_kitti);
+
+	Mat K = Mat(3,3,CV_64F,kittiCamMatrix);
   double distCoeffs[8][1] = {0.3120601177215576,
                             -2.4365458488464355,
                              0.00019845466886181384,
@@ -148,41 +145,37 @@ public:
 		crop = frame(crop_region);
     orbis->detectAndCompute(crop, noArray(), keyp2, desc2, false);
 
-		//cout << "Number of keypoints: " << keyp2.size() << endl;
-
     if(keyp1.size() > 6 || keyp2.size() > 6)
     {
     matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
-		//matches = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
-		//cout << "Matches size: " << matches.size() << endl;
-
     tie(t,R) = tranRot(keyp1, keyp2, matches);
-		//hconcat(R,t,P);
 
-		nrmatches = nrmatches + matches.size();
-		avgmatches = nrmatches/iterations;
+		nrMatches = nrMatches + matches.size();
+		avgMatches = nrMatches/iterations;
 		double avgDist = avgMatchDist(matches);
 		//cout << endl;
 
-		PkHat = scaleUpdate(Kitti, Rprev, R, tprev, t);
+		PkHat = scaleUpdate(K, Rprev, R, tprev, t);
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
-		cv::triangulatePoints(Kitti*Pk_1Hat, PkHat, scene1, scene2, point3d);
+		cv::triangulatePoints(K*Pk_1Hat, PkHat, scene1, scene2, point3d);
+
 		if(matches.size() < 500)
 		{
 		curScale = getScale(point3d, PkHat, matches, keyp2, prevScale, alpha, camHeight);
 		prevScale = curScale;
 	  }
-		auto velocity = curScale/0.1;
-		cout << "Total velocity: " << velocity << " m/s" << endl;
-		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)
+		auto velocity = curScale/0.1; //Scale is the total displacement in meters, over the time of 100ms the velocity can be found
+																	//Solution is not optimal but works if calculation time
+		//cout << "Total velocity: " << velocity << " m/s" << endl; //Display total velocity
+		cout << velocity << endl;
+		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)//Safeguard to in case if image is still
 		{
-		Rodrigues(Rpos, rot, noArray());
-		Rodrigues(R, rotDiff, noArray());
+		Rodrigues(Rpos, rot, noArray()); //Converts rotation matrix to rotation vector
+		Rodrigues(R, rotDiff, noArray());//Same as above but with the difference in Yaw
 		yawDiff = rotDiff.at<double>(1,0);
 		yaw = rot.at<double>(1,0);
-		//cout << "Rotation in degrees: " << endl << rot.at<double>(1,0)*180/3.14159 << endl;
-    tpos = tpos + Rpos*t*curScale;
-		Rpos = R*Rpos;
+    tpos = tpos + Rpos*t*curScale; //The scaled estimate is updated here
+		Rpos = R*Rpos;								 //The rotation matrix updated after
 		}
 		if(iterations > 1)
 		{
@@ -204,7 +197,7 @@ public:
 		//cout << "Yaw: " << yaw*180/3.14159 << endl;
 		//cout << "Yaw difference: " << yawDiff*180/3.14159 << endl;
 	  }
-		//since all odometry is 6DOF we'll need a quaternion created from yaw
+		//Quaternion created from yaw to publish in nav_msgs
     geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(yaw);
 
 		//We'll publish the odometry message over ROS
@@ -220,7 +213,7 @@ public:
 		odom.twist.twist.angular.z = yawVel;
 
 		//cout << "Yaw: " << yaw << endl;
-		//cout << "Average number of matches: " << avgmatches << endl;
+		cout << "Average number of matches: " << avgMatches << endl;
 		//cout << "Average match distance: " << avgDist << endl;
 
     //publish the message

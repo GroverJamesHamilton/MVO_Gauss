@@ -306,6 +306,7 @@ double W, Y, median, average, newScale;
 		{
 		auto pix = keyp2[matches[i].trainIdx].pt;
 		Y = point3d.at<double>(i,1)/W;
+		//cout << Y << endl;
 		if(Y > 0.7 && Y < 3 && Y != 1 && W > 1e-300)
 		{
 			//cout << "Ok value: " << Y << endl;
@@ -315,13 +316,13 @@ double W, Y, median, average, newScale;
 		}
 size = Yval.size();
 //cout << "Size: " << size << endl;
-/*
-cout << "Yval sorted: " << endl;
+
+//cout << "Yval sorted: " << endl;
 sort(Yval.begin(), Yval.end());
 for(int i = 0; i < size; i++){
-cout << Yval[i] << endl;
+//cout << Yval[i] << endl;
 }
-*/
+
 if(size > 2)
 {
 if(size % 2 == 0)
@@ -353,11 +354,11 @@ if(size == 0)
 	average = height/prevScale;
 	//cout << "Failed" << endl;
 }
-cout << "Size: " << size << endl;
-cout << "Average: " << average << endl;
+//cout << "Size: " << size << endl;
+//cout << "Average: " << average << endl;
 newScale = (1 - alpha)*prevScale + alpha*height/average;
 //cout << "Average :" << average << endl;
-cout << "newScale: " << newScale << endl;
+//cout << "newScale: " << newScale << endl;
 
 return newScale;
 }
