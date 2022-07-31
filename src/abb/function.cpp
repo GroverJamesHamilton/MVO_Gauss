@@ -103,8 +103,8 @@ Mat img_matches,img_matches_good;
 drawMatches(img1, keyp1, img2, keyp2, matches, img_matches);
 drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good, Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 //-- Show detected matches
-cv::resize(img_matches, img_matches, cv::Size(), 0.25, 0.25);
-cv::resize(img_matches_good, img_matches_good, cv::Size(), 1, 1);
+cv::resize(img_matches, img_matches, cv::Size(), 0.5, 0.5);
+cv::resize(img_matches_good, img_matches_good, cv::Size(), 0.25, 0.25);
 imshow("Good Matches", img_matches_good);
 /*cout << "Feature matching time:" << ms << endl;
 cout << "Number of good matches:" << good_matches.size() << endl;

@@ -61,15 +61,15 @@ double prevScale = 0.01;
 double alpha = 0.1;
 double camHeight = 1.35;
 
-cv::Rect crop_region(430, 360, 420, 340);
-//cv::Rect crop_region(30, 20, 1220, 680); //Removes black space left from undistortion
+//cv::Rect crop_region(430, 360, 420, 340);
+cv::Rect crop_region(30, 20, 1220, 680); //Removes black space left from undistortion
 
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
 int X,Y; //Pixel location to print trajectory
 double x,y,vx,vy;
 
-Ptr<ORB> orbis = cv::ORB::create(1500,
+Ptr<ORB> orbis = cv::ORB::create(3500,
 		1.2f,
 		8,
 		15,
@@ -77,7 +77,7 @@ Ptr<ORB> orbis = cv::ORB::create(1500,
 		3,
 		ORB::FAST_SCORE,
 	  31, // Descriptor patch size, 31 is so far best estimate
-		5);
+		9);
 
 double K_help[3][3] = {
   {612.84,0,639.31},
@@ -105,7 +105,7 @@ public:
     : it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
-		image_sub_ = it_.subscribe("/myumi_005/rgb/image_raw", 1000, &ImageConverter::imageCb, this);
+		image_sub_ = it_.subscribe("/myumi_005/rgb/image_raw", 1, &ImageConverter::imageCb, this);
 
     //cv::namedWindow(OPENCV_WINDOW);
   }
