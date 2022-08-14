@@ -19,6 +19,8 @@ cv_bridge/cv_bridge.h
 -
 sensor_msgs/image_encodings.h
 -
+sensor_msgs/CameraInfo.h
+-
 tf/transform_broadcaster.h
 -
 nav_msgs/Odometry.h

@@ -6,6 +6,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CameraInfo.h>
 
 //Odometry
 #include <tf/transform_broadcaster.h>
@@ -20,7 +21,7 @@
 //Own-made functions from function.cpp
 #include "function.h"
 
-double iterations = 1;
+double it = 1;
 Mat oldFrame, oldFrame0, oldFrame1, oldFrame2, frame, frame0, frame1, frame2, crop, oldCrop;
 
 //Below are the rotation and translation matrices used for different purposes
@@ -59,8 +60,9 @@ double curScale = 1.4;
 double prevScale = 1.4;
 double alpha = 0.1;
 double camHeight = 1.65;
-
-cv::Rect crop_region(414, 175, 414, 200); //Only a small subset of the frame is extracted
+double xOffset = 414;
+double yOffset = 175;
+cv::Rect crop_region(xOffset, yOffset, 414, 200); //Only a small subset of the frame is extracted
 
 //The printed trajectory
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
@@ -69,9 +71,9 @@ int X,Y; //Pixel location to print trajectory
 double x,y,vx,vy;
 
 Ptr<ORB> orbis = cv::ORB::create(1500,
-		1.2f,
+		1.25f,
 		8,
-		15,
+		16,
 		0,
 		3,
 		ORB::FAST_SCORE,
@@ -79,25 +81,29 @@ Ptr<ORB> orbis = cv::ORB::create(1500,
 		9);
 //The camera matrix dist. coeffs for the KITTI dataset
 	double kittiCamMatrix[3][3] = {
-	  {718.856,0,607.1928},
-	  {0,718.856,185.2157},
+	  {959.791,0,696.0217 - xOffset}, //
+	  {0,956.9251,224.1806 - yOffset},
 	  {0,0,1}};
 
 	Mat K = Mat(3,3,CV_64F,kittiCamMatrix);
-  double distCoeffs[8][1] = {0.3120601177215576,
-                            -2.4365458488464355,
-                             0.00019845466886181384,
-                            -0.00034599119680933654,
-                             1.4696191549301147,
-                             0.19208934903144836,
-                            -2.255640745162964,
-                             1.3926784992218018};
+  double distCoeffs[8][1] = {-0.3691481, 0.1968681, 0.001353473, 0.0005677587, -0.06770705};
   Mat dist = Mat(8,1,CV_64F,distCoeffs);
 
+	ros::Time delay(0.02);
+
+// Ros time stamp
+ros::Time simTime, lastTime;
 using namespace cv;
 using namespace std;
 static const std::string OPENCV_WINDOW = "Image Window";
 
+void infoCb(const sensor_msgs::CameraInfoConstPtr& info_msg)
+{
+	//cout << info_color_msg->header.stamp << endl;
+	simTime = info_msg->header.stamp;
+	//cout << "Last time: " << lastTime << endl;
+	cout << "Sim real time: " << simTime << endl;
+}
 class ImageConverter
 {
 public:
@@ -106,7 +112,6 @@ public:
   {
     // Subscribe to input video feed and publish output video feed
 		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", 1, &ImageConverter::imageCb, this);
-
     cv::namedWindow(OPENCV_WINDOW);
   }
   ~ImageConverter()
@@ -115,6 +120,7 @@ public:
   }
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
+		cout << "Sim time: " << ros::Time::now() << endl;
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
@@ -127,11 +133,9 @@ public:
     }
 	//-------------------------------------------------------------------------------------------
   //You can test your algorithm here.
-
 	R.copyTo(Rprev);
 	t.copyTo(tprev);
-
-  if (iterations == 1)
+  if (it == 1)
   {
     oldFrame0 = cv_ptr->image;
     undistort(oldFrame0, oldFrame, K, dist, Mat());
@@ -151,7 +155,7 @@ public:
     tie(t,R) = tranRot(keyp1, keyp2, matches);
 
 		nrMatches = nrMatches + matches.size();
-		avgMatches = nrMatches/iterations;
+		avgMatches = nrMatches/it;
 		double avgDist = avgMatchDist(matches);
 		//cout << endl;
 
@@ -167,17 +171,18 @@ public:
 		auto velocity = curScale/0.1; //Scale is the total displacement in meters, over the time of 100ms the velocity can be found
 																	//Solution is not optimal but works if calculation time
 		//cout << "Total velocity: " << velocity << " m/s" << endl; //Display total velocity
-		cout << velocity << endl;
+		//cout << velocity << endl;
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)//Safeguard to in case if image is still
 		{
 		Rodrigues(Rpos, rot, noArray()); //Converts rotation matrix to rotation vector
 		Rodrigues(R, rotDiff, noArray());//Same as above but with the difference in Yaw
 		yawDiff = rotDiff.at<double>(1,0);
 		yaw = rot.at<double>(1,0);
-    tpos = tpos + Rpos*t*curScale; //The scaled estimate is updated here
+		tpos = tpos + Rpos*t*curScale; //The scaled estimate is updated here
 		Rpos = R*Rpos;								 //The rotation matrix updated after
+
 		}
-		if(iterations > 1)
+		if(it > 1)
 		{
     X = 2*tpos.at<double>(0,0);
     Y = 2*tpos.at<double>(0,2);
@@ -194,15 +199,30 @@ public:
 		//cout << "Ypos: " << y << endl;
 		//cout << "xvec: " << vx << endl;
 		//cout << "yvec: " << vy << endl;
-		//cout << "Yaw: " << yaw*180/3.14159 << endl;
+		//cout << "Yaw: " << yaw << endl;
 		//cout << "Yaw difference: " << yawDiff*180/3.14159 << endl;
+		//cout << x << ", " << y << ";" << endl;
 	  }
+
+		//ros::Subscriber info_sub_ = nInfo.subscribe("/kitti/camera_color_left/camera_info", 1, infoCb);
 		//Quaternion created from yaw to publish in nav_msgs
+
     geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(yaw);
+
+		//first, we'll publish the transform over tf
+		geometry_msgs::TransformStamped odom_trans;
+		//odom_trans.header.stamp = current_time;
+		odom_trans.header.frame_id = "odom";
+		odom_trans.child_frame_id = "base_link";
+
+		odom_trans.transform.translation.x = x;
+		odom_trans.transform.translation.y = y;
+		odom_trans.transform.translation.z = 0.0;
+		odom_trans.transform.rotation = odom_quat;
 
 		//We'll publish the odometry message over ROS
     odom.header.frame_id = "odom";
-
+		odom.header.stamp = simTime;
     //set the position
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
@@ -213,25 +233,29 @@ public:
 		odom.twist.twist.angular.z = yawVel;
 
 		//cout << "Yaw: " << yaw << endl;
-		cout << "Average number of matches: " << avgMatches << endl;
+		//cout << "Average number of matches: " << avgMatches << endl;
 		//cout << "Average match distance: " << avgDist << endl;
 
     //publish the message
     odom_pub_.publish(odom);
 
-    //cout << "Iterations: " << iterations << endl;
+    //cout << "Iterations: " << it << endl;
 		circle(trajectory, Point(X + dim/2,Y + dim/2), 2, Scalar(0,0,255), 2);
     cv::resize(trajectory, traj, cv::Size(), showScale, showScale);
-    imshow( "Trajectory", traj );
+    imshow("Trajectory", traj);
     }
-
 		oldCrop = crop.clone();
   	oldFrame = frame.clone();
     keyp1 = keyp2;
     desc1 = desc2.clone();
-
-  iterations++;
-//cout << "Frame number: " << iterations << endl;
+		//cout << "Frame number: " << it << endl;
+    it++;
+		if(simTime == lastTime)
+		{
+			//cout << "Out of syncxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" << endl;
+		}
+		//cout << "Odom sim time: " << simTime << endl;
+		cout << endl;
     //------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
     // Update GUI Window
@@ -244,16 +268,18 @@ public:
 private:
   ros::NodeHandle nh_;
 	ros::NodeHandle n;
+	ros::NodeHandle nInfo;
+	image_transport::Subscriber info_sub_;
 	ros::Publisher odom_pub_ = n.advertise<nav_msgs::Odometry>("odom", 1);
 	nav_msgs::Odometry odom;
   image_transport::ImageTransport it_;
   image_transport::Subscriber image_sub_;
-  //image_transport::Publisher image_pub_;
 };
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "image_converter");
+	ros::NodeHandle nInfo;
   ImageConverter ic;
   ros::spin();
   return 0;

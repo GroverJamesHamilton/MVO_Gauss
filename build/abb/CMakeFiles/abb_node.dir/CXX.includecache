@@ -33,8 +33,6 @@ opencv2/core/mat.hpp
 -
 function.h
 /home/labbare/abb_ws/src/abb/function.h
-fstream
--
 
 /home/labbare/abb_ws/src/abb/function.h
 iostream

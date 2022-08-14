@@ -7,6 +7,8 @@
 #IncludeRegexTransform: 
 
 /home/labbare/abb_ws/src/odom/src/odom_node.cpp
+iostream
+-
 ros/ros.h
 /home/labbare/abb_ws/src/odom/src/ros/ros.h
 nav_msgs/Odometry.h

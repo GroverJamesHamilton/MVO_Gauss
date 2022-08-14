@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(robot_localization_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/home/labbare/abb_ws/devel/include;/home/labbare/abb_ws/src/robot_localization/include;/usr/include/eigen3;/usr/include " STREQUAL " ")
+if(NOT "/home/labbare/abb_ws/devel/include;/home/labbare/abb_ws/src/robot_localization/include;/usr/include/eigen3 " STREQUAL " ")
   set(robot_localization_INCLUDE_DIRS "")
-  set(_include_dirs "/home/labbare/abb_ws/devel/include;/home/labbare/abb_ws/src/robot_localization/include;/usr/include/eigen3;/usr/include")
+  set(_include_dirs "/home/labbare/abb_ws/devel/include;/home/labbare/abb_ws/src/robot_localization/include;/usr/include/eigen3")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT "http://ros.org/wiki/robot_localization " STREQUAL " ")
@@ -116,7 +116,7 @@ if(NOT "/home/labbare/abb_ws/devel/include;/home/labbare/abb_ws/src/robot_locali
   endforeach()
 endif()
 
-set(libraries "ekf;ekf_localization_nodelet;filter_base;filter_utilities;navsat_transform;navsat_transform_nodelet;ros_filter;ros_filter_utilities;robot_localization_estimator;ros_robot_localization_listener;ukf;ukf_localization_nodelet;/usr/lib/x86_64-linux-gnu/libGeographic.so;yaml-cpp")
+set(libraries "ekf;ekf_localization_nodelet;filter_base;filter_utilities;navsat_transform;navsat_transform_nodelet;ros_filter;ros_filter_utilities;robot_localization_estimator;ros_robot_localization_listener;ukf;ukf_localization_nodelet;yaml-cpp")
 foreach(library ${libraries})
   # keep build configuration keywords, target names and absolute libraries as-is
   if("${library}" MATCHES "^(debug|optimized|general)$")
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/labbare/abb_ws/devel/lib;/home/labbare/abb_ws/src/devel/lib;/home/labbare/abb_ws/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/labbare/abb_ws/devel/lib;/home/labbare/abb_ws/src/odom/devel/lib;/home/labbare/abb_ws/src/abb/devel/lib;/home/labbare/abb_ws/src/devel/lib;/home/labbare/abb_ws/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
@@ -185,7 +185,7 @@ foreach(t ${robot_localization_EXPORTED_TARGETS})
   endif()
 endforeach()
 
-set(depends "angles;cmake_modules;diagnostic_msgs;diagnostic_updater;eigen_conversions;geographic_msgs;geometry_msgs;message_filters;message_runtime;nav_msgs;roscpp;sensor_msgs;std_msgs;std_srvs;tf2;tf2_geometry_msgs;tf2_ros")
+set(depends "cmake_modules;diagnostic_msgs;diagnostic_updater;eigen_conversions;geographic_msgs;geometry_msgs;message_filters;message_runtime;nav_msgs;roscpp;sensor_msgs;std_msgs;std_srvs;tf2;tf2_geometry_msgs;tf2_ros")
 foreach(depend ${depends})
   string(REPLACE " " ";" depend_list ${depend})
   # the package name of the dependency must be kept in a unique variable so that it is not overwritten in recursive calls
