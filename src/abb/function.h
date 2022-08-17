@@ -14,6 +14,7 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+#include <ros/ros.h>
 
 using namespace cv;
 using namespace std;
@@ -42,5 +43,6 @@ double getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint>
 double avg(vector<double> v);
 double variance(vector<double> v,double mean);
 double avgMatchDist(vector<DMatch> matches);
+double correctTimeDivide(double timeDiff, double sampleTime);
 
 #endif

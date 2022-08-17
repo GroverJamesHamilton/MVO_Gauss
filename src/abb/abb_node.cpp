@@ -20,6 +20,13 @@
 
 //Own-made functions from function.cpp
 #include "function.h"
+#include <typeinfo>
+
+//For tf
+#include <tf/transform_listener.h>
+#include "tf/message_filter.h"
+#include "message_filters/subscriber.h"
+#include <tf2_ros/transform_listener.h>
 
 double it = 1;
 Mat oldFrame, oldFrame0, oldFrame1, oldFrame2, frame, frame0, frame1, frame2, crop, oldCrop;
@@ -53,6 +60,7 @@ float yawVel;
 int avgMatches = 0;
 int nrMatches = 0;
 
+double sampleTime = 0.103;
 double dim = 700;
 double dimShow = 700;
 double showScale = dimShow/dim;
@@ -60,9 +68,12 @@ double curScale = 1.4;
 double prevScale = 1.4;
 double alpha = 0.1;
 double camHeight = 1.65;
-double xOffset = 414;
-double yOffset = 175;
-cv::Rect crop_region(xOffset, yOffset, 414, 200); //Only a small subset of the frame is extracted
+
+int xpix = 1240;
+int ypix = 375;
+int xOffset = 414;
+int yOffset = 175;
+cv::Rect crop_region(xOffset, yOffset, xpix - 2*xOffset, ypix - yOffset); //Only a small subset of the frame is extracted
 
 //The printed trajectory
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
@@ -89,29 +100,42 @@ Ptr<ORB> orbis = cv::ORB::create(1500,
   double distCoeffs[8][1] = {-0.3691481, 0.1968681, 0.001353473, 0.0005677587, -0.06770705};
   Mat dist = Mat(8,1,CV_64F,distCoeffs);
 
-	ros::Time delay(0.02);
-
 // Ros time stamp
 ros::Time simTime, lastTime;
+double timeDiff;
 using namespace cv;
 using namespace std;
 static const std::string OPENCV_WINDOW = "Image Window";
 
+double xt, yt;
+
+void tfCb(const tf2_msgs::TFMessage::ConstPtr& tf_msg)
+{
+xt = tf_msg->transforms.at(0).transform.translation.x;
+yt = tf_msg->transforms.at(0).transform.translation.y;
+
+circle(trajectory, Point(yt + dim/2,xt + dim/2), 2, Scalar(124,252,0), 2);
+}
+
 void infoCb(const sensor_msgs::CameraInfoConstPtr& info_msg)
 {
-	//cout << info_color_msg->header.stamp << endl;
 	simTime = info_msg->header.stamp;
-	//cout << "Last time: " << lastTime << endl;
-	cout << "Sim real time: " << simTime << endl;
+	cout << "Time difference: " << simTime - lastTime << endl;
+	//cout << "Last time: " << lastTim << endl;
+	lastTime = simTime;
 }
+
 class ImageConverter
 {
 public:
+
   ImageConverter()
     : it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
 		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", 1, &ImageConverter::imageCb, this);
+		//image_sub_ = it_.subscribe("/kitti/camera_gray/right/image_rect", 1, &ImageConverter::imageCb, this);
+		// /kitti/camera_gray/right/camera_info
     cv::namedWindow(OPENCV_WINDOW);
   }
   ~ImageConverter()
@@ -120,7 +144,9 @@ public:
   }
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
-		cout << "Sim time: " << ros::Time::now() << endl;
+		simTime = ros::Time::now();
+		timeDiff = (simTime - lastTime).toSec();
+		//cout << "Time difference: " << timeDiff << endl;
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
@@ -142,6 +168,7 @@ public:
 		//undistort(oldFrame0, oldFrame, Kitti, Mat(), Mat());
 		oldCrop = oldFrame(crop_region);
     orbis->detectAndCompute(oldCrop, noArray(), keyp1, desc1, false);
+		//lastTime = ros::Time::now();
   }
     frame0 = cv_ptr->image;
     undistort(frame0, frame, K, dist, Mat());
@@ -163,14 +190,16 @@ public:
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matches);
 		cv::triangulatePoints(K*Pk_1Hat, PkHat, scene1, scene2, point3d);
 
-		if(matches.size() < 500)
+		if(matches.size() < 1)
 		{
 		curScale = getScale(point3d, PkHat, matches, keyp2, prevScale, alpha, camHeight);
 		prevScale = curScale;
 	  }
-		auto velocity = curScale/0.1; //Scale is the total displacement in meters, over the time of 100ms the velocity can be found
+		//cout << "Time divide: " << correctTimeDivide(timeDiff, sampleTime) << endl;
+		//cout << "Current scale: " << curScale << endl;
+		auto velocity = curScale/correctTimeDivide(timeDiff, sampleTime); //Scale is the total displacement in meters, over the time of 100ms the velocity can be found
 																	//Solution is not optimal but works if calculation time
-		//cout << "Total velocity: " << velocity << " m/s" << endl; //Display total velocity
+		cout << "Total velocity: " << velocity << " m/s" << endl; //Display total velocity
 		//cout << velocity << endl;
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgDist > 10)//Safeguard to in case if image is still
 		{
@@ -178,7 +207,8 @@ public:
 		Rodrigues(R, rotDiff, noArray());//Same as above but with the difference in Yaw
 		yawDiff = rotDiff.at<double>(1,0);
 		yaw = rot.at<double>(1,0);
-		tpos = tpos + Rpos*t*curScale; //The scaled estimate is updated here
+		//tpos = tpos + Rpos*t*curScale; //The scaled estimate is updated here
+		tpos = tpos + Rpos*t; //The scaled estimate is updated here
 		Rpos = R*Rpos;								 //The rotation matrix updated after
 
 		}
@@ -193,13 +223,13 @@ public:
 		vx = -t.at<double>(0,2)*velocity;
 		vy = t.at<double>(0,0)*velocity;
 
-		yawVel = yawDiff/0.1;
+		yawVel = yawDiff/correctTimeDivide(timeDiff, sampleTime);
 
-		//cout << "Xpos: " << x << endl;
-		//cout << "Ypos: " << y << endl;
+		cout << "Xpos: " << x << endl;
+		cout << "Ypos: " << y << endl;
 		//cout << "xvec: " << vx << endl;
 		//cout << "yvec: " << vy << endl;
-		//cout << "Yaw: " << yaw << endl;
+		cout << "Yaw: " << yaw*180/3.14159 << endl;
 		//cout << "Yaw difference: " << yawDiff*180/3.14159 << endl;
 		//cout << x << ", " << y << ";" << endl;
 	  }
@@ -250,12 +280,8 @@ public:
     desc1 = desc2.clone();
 		//cout << "Frame number: " << it << endl;
     it++;
-		if(simTime == lastTime)
-		{
-			//cout << "Out of syncxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" << endl;
-		}
-		//cout << "Odom sim time: " << simTime << endl;
 		cout << endl;
+		lastTime = simTime;
     //------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
     // Update GUI Window
@@ -280,6 +306,9 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "image_converter");
 	ros::NodeHandle nInfo;
+	//ros::Subscriber info_msg = nInfo.subscribe("/kitti/camera_color_left/camera_info", 1, infoCb);
+	ros::NodeHandle nTf;
+	ros::Subscriber tf_msg = nTf.subscribe("/tf", 5, tfCb);
   ImageConverter ic;
   ros::spin();
   return 0;

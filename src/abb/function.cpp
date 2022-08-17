@@ -375,6 +375,19 @@ double sum = 0;
 	avg = sum/matches.size();
 	return avg;
 }
+
+double correctTimeDivide(double timeDiff, double sampleTime)
+{
+if(timeDiff < 1)
+	{
+		return round(10*timeDiff)*sampleTime;
+	}
+else
+	{
+		return sampleTime;
+	}
+}
+
 //
 //// SUACE - Speeded Up Adaptive Constrast Enhancement filter
 //
