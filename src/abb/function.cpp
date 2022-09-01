@@ -3,73 +3,10 @@ using namespace cv;
 using namespace std;
 //using namespace cv::xfeatures2d;
 //
-//// ORB
-//
-Mat ORB_(Mat image, vector<KeyPoint> keypoints) {
-	Mat gray;
-	//Convert to grayscale
-	cvtColor(image, gray, cv::COLOR_BGR2GRAY);
-	Mat descriptors;
-	Ptr<ORB> desc = ORB::create();
-	// Record start time
-  auto begin = chrono::high_resolution_clock::now();
-	desc->compute(image, keypoints, descriptors);
-	// Record end time
-	auto end = chrono::high_resolution_clock::now();
-	auto dur = end - begin;
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-	//cout << "Calculation time ORB:" << ms << "ms" << endl;
-	return descriptors;
-}
-//
-// FLANN
-//
-Mat FLANN(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio) {
-	if(desc1.type()!=CV_32F) {
-	    desc1.convertTo(desc1, CV_32F);
-			//cout << "Converting to CV_32F" << endl;
-	}
-	if(desc2.type()!=CV_32F) {
-	    desc2.convertTo(desc2, CV_32F);
-			//cout << "Converting to CV_32F" << endl;
-	}
-	Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
-	std::vector< std::vector<DMatch> > matches;
-	// Record start time
-  auto begin = chrono::high_resolution_clock::now();
-	matcher->knnMatch(desc1, desc2, matches, 3);
-	//-- Filter matches using the Lowe's ratio test
-const float ratio_thresh = ratio;
-std::vector<DMatch> good_matches;
-for (size_t i = 0; i < matches.size(); i++)
-{
-		if (matches[i][0].distance < ratio_thresh * matches[i][1].distance)
-		{
-				good_matches.push_back(matches[i][0]);
-		}
-}
-	// Record end time
-	auto end = chrono::high_resolution_clock::now();
-	auto dur = end - begin;
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-	//-- Draw matches
-Mat img_matches,img_matches_good;
-drawMatches(img1, keyp1, img2, keyp2, matches, img_matches);
-drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good);
-//-- Show detected matches
-cv::resize(img_matches, img_matches, cv::Size(), 0.5, 0.5);
-cv::resize(img_matches_good, img_matches_good, cv::Size(), 2, 2);
-//imshow("Matches", img_matches);
-imshow("Good Matches", img_matches_good);
-//cout << "Feature matching time:" << ms << endl;
-//cout << endl;
-	return {img_matches};
-}
-//
-// Brute Force Matcher
+//Brute Force Matcher + displays matches
 //
 vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio) {
-
+//Makes sure descriptors are the right data type
 	if(desc1.type()!=CV_32F) {
 	    desc1.convertTo(desc1, CV_32F);
 			//cout << "Converting to CV_32F" << endl;
@@ -78,16 +15,13 @@ vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<Key
 	    desc2.convertTo(desc2, CV_32F);
 			//cout << "Converting to CV_32F" << endl;
 	}
-
-	//BFMatcher matcher;
 	Ptr<BFMatcher> matcher = BFMatcher::create(NORM_L2, false);
 	std::vector< std::vector<DMatch> > matches;
 	std::vector<DMatch> good_matches;
-  if (keyp1.size() > 3 && keyp2.size() > 3) {
-	// Record start time
-  auto begin = chrono::high_resolution_clock::now();
+  if (keyp1.size() > 3 && keyp2.size() > 3) { //Minimum amount of features needed from both frames
+	//Extract feature matches
 	matcher->knnMatch(desc1, desc2, matches, 2);
-	//-- Filter matches using the Lowe's ratio test
+	//Removes bad matches using the Lowe's ratio test
 const float ratio_thresh = ratio;
 for (size_t i = 0; i < matches.size(); i++)
 {
@@ -96,132 +30,58 @@ for (size_t i = 0; i < matches.size(); i++)
 				good_matches.push_back(matches[i][0]);
 		}
 }
-	// Record end time
-	auto end = chrono::high_resolution_clock::now();
-	auto dur = end - begin;
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-	//-- Draw matches
+//Draw matches
 Mat img_matches,img_matches_good;
-drawMatches(img1, keyp1, img2, keyp2, matches, img_matches);
 drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good, Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-//-- Show detected matches
-cv::resize(img_matches, img_matches, cv::Size(), 0.25, 0.25);
 cv::resize(img_matches_good, img_matches_good, cv::Size(), 1, 1);
 imshow("Good Matches", img_matches_good);
-/*cout << "Feature matching time:" << ms << endl;
-cout << "Number of good matches:" << good_matches.size() << endl;
-cout << "Number of matches overall:" << matches.size() << endl;
-double matchingRatio = good_matches.size()/matches.size();
-cout << "Matching ratio:" << matchingRatio << endl; */
 }
 	return {good_matches};
 }
-tuple <Mat, Mat> tranRot(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<DMatch> matches){
-	vector<Point2f> scene1, scene2;
-	Mat H, E, R, t;
-	double K_ar[3][3] = {
-		{612.84,0,639.31},
-		{0,612.8,367.35},
-		{0,0,1}};
-		double K_kitti[3][3] = {
-	 	 {959.791,0,696.0217},
-	 	 {0,956.9251,224.1806},
-	 	 {0,0,1}};
-		Mat K = Mat(3,3,CV_64F,K_kitti);
-if (matches.size() > 5) {
-// Record start time
-auto begin = chrono::high_resolution_clock::now();
+
+//Returns epipolar geometry between 2 frames based on the RANSAC scheme
+tuple <Mat, Mat> getInitPose(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<DMatch> matches, Mat cam){
+	vector<Point2f> scene1, scene2; //Pixel locations of feature matches
+	Mat E, R, t; //Essential matrix, Rotation matrix and translation vector
+if (matches.size() > 5) { //5-point algorithm won't work with less
+
 for( size_t i = 0; i < matches.size(); i++)
 {
-		//-- Retrieve the keypoints from the good matches
+		//Retrieve the Pixel locations from the good matches
 		scene1.push_back( keyp1[ matches[i].queryIdx ].pt);
 		scene2.push_back( keyp2[ matches[i].trainIdx ].pt);
 }
 
-E = findEssentialMat(scene2, scene1, K, RANSAC, 0.999, 1);
-recoverPose(E, scene2, scene1, K, R, t, noArray());
-/*cout << "R:" << R << endl;
-cout << endl;
-cout << "t:" << t << endl;
-cout << endl;*/
-// Record end time
-auto end = chrono::high_resolution_clock::now();
-auto dur = end - begin;
-auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-//cout << "Pose calculation time [ms]:" << ms << endl;
-//cout << endl;
+//Estimating the epipolar geometry between the 2 frames with a RANSAC scheme
+E = findEssentialMat(scene2, scene1, cam, RANSAC, 0.999, 1);
+recoverPose(E, scene2, scene1, cam, R, t, noArray());
 }
 return {t,R};
 }
-//
-//// Camera calibration Zhang's Method
-//
-Mat zhangCalib(vector<string> fileNames, int cols, int rows) {
-	cv::Size patternSize(cols - 1, rows - 1);
-	std::vector<std::vector<cv::Point2f>> q(fileNames.size());
-	std::vector<std::vector<cv::Point3f>> Q;
-	int checkerBoard[2] = {cols, rows};
-	// Defining the world coordinates for 3D points
-		std::vector<cv::Point3f> objp;
-		for(int i = 1; i<checkerBoard[1]; i++){
-			for(int j = 1; j<checkerBoard[0]; j++){
-				objp.push_back(cv::Point3f(j,i,0));
-			}
-		}
-	std::vector<cv::Point2f> imgPoint;
-	// Detect feature points
-	std::size_t i = 0;
-	for (auto const &f : fileNames) {
-		std::cout << std::string(f) << std::endl;
-		// 2. Read in the image an call cv::findChessboardCorners()
-		cv::Mat img = cv::imread(fileNames[i]);
-		cv::Mat gray;
-		cv::cvtColor(img, gray, cv::COLOR_RGB2GRAY);
-		bool patternFound = cv::findChessboardCorners(gray, patternSize, q[i], cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
-		// 2. Use cv::cornerSubPix() to refine the found corner detections
-		if(patternFound){
-				cv::cornerSubPix(gray, q[i],cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
-				Q.push_back(objp);
-		}
-		// Display
-		cv::drawChessboardCorners(img, patternSize, q[i], patternFound);
-		//cv::imshow("chessboard detection", img);
-		//cv::waitKey(0);
-		i++;
-	}
-	cv::Mat K(cv::Matx33f::eye());  // intrinsic camera matrix
-	cv::Vec<float, 5> k(0, 0, 0, 0, 0); // distortion coefficients
-	std::vector<cv::Mat> rvecs, tvecs;
-	std::vector<double> stdIntrinsics, stdExtrinsics, perViewErrors;
-	int flags = cv::CALIB_FIX_ASPECT_RATIO + cv::CALIB_FIX_K3 +
-							cv::CALIB_ZERO_TANGENT_DIST + cv::CALIB_FIX_PRINCIPAL_POINT;
-	cv::Size frameSize(1440, 1080);
-	std::cout << "Calibrating..." << std::endl;
-	// 4. Call "float error = cv::calibrateCamera()" with the input coordinates
-	// and output parameters as declared above...
-	float error = cv::calibrateCamera(Q, q, frameSize, K, k, rvecs, tvecs, flags);
-	std::cout << "Reprojection error = " << error << "\nK =\n"
-						<< K << "\nk=\n"
-						<< k << std::endl;
-return K;
-}
+
+//Not currently used in this subset
+//Bucketing: Divides frame into a nxm grid, detects features in each subset
+//I.e. evenly distributes the keypoints more evenly
 vector<KeyPoint> Bucketing(Mat img, int gridX, int gridY, int max)
 {
+	//The ORB-detector
 	Ptr<ORB> ORBucket = cv::ORB::create(
 		  120, // Max 120 features per grid point
-			1.2f,
-			8,
+			1.2f,//Pyramid decimation ratio
+			8,	 //Nr of pyramid levels
 			31,
 			0,
 			2,
-			ORB::HARRIS_SCORE,
+			ORB::FAST_SCORE,
 			31,
-			5);
+			5); //Detector
 Mat crop;
 vector <KeyPoint> helpKeyp;
+//Divides image into grid
 int gridRows = img.cols/gridX;
 int gridCols = img.rows/gridY;
 vector <KeyPoint> keyp;
+//Detects features for each grid subset
 for(size_t i = 0; i < gridX; i++)
 {
 	for(size_t j = 0; j < gridY; j++)

@@ -82,16 +82,21 @@ double x,y,vx,vy;
 double avgMatchesDist;
 double avgDistThresh = 10;
 
-Ptr<ORB> orbOdom = cv::ORB::create(1000,
-		1.25f,
-		8,
-		16,
-		0,
-		3,
-		ORB::FAST_SCORE,
-	  31, // Descriptor patch size
-		6);
+//Initialize the ORB detectors/descriptors
+//For the unscaled visual odometry
+//Primarily: The max numbers of features and FAST threshold are the most crucial parameters
+//to change since they have the most impact
 
+Ptr<ORB> orbOdom = cv::ORB::create(1000, //Max number of features
+		1.25f,															 //Pyramid decimation ratio > 1
+		8,																	 //Number of pyramid levels
+		16,																	 //Edge threshold
+		0,																	 //The level of pyramid to put source image to
+		3,																	 //WTA_K
+		ORB::FAST_SCORE,										 //Which algorithm is used to rank features, either FAST_SCORE or HARRIS_SCORE
+	  31,                                  //Descriptor patch size
+		6);                                  //The FAST threshold
+//For the scale recovery
 Ptr<ORB> orbScale = cv::ORB::create(500,
 		1.2f,
 		8,
@@ -217,7 +222,7 @@ public:
 		{
 		orbScale->detectAndCompute(scaleIm, noArray(), keyp4, desc4, false);
 	  }
-    if(keyp1.size() > 6 || keyp2.size() > 6) //Segmentation fault if keypoints are lower than 5
+    if(keyp1.size() > 6 || keyp2.size() > 6) //Segmentation fault if detected features are lower than 5
     {
     matchesOdom = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
 		matches2 = BruteForce(oldScaleIm, scaleIm, keyp3, keyp4, desc3, desc4, 0.5);
@@ -230,8 +235,8 @@ public:
 		tie(scene3, scene4) = getPixLoc(keyp3, keyp4, matches2);
  	  }
 
-		//Epipolar geometry between the 2 current frames
-    tie(t,R) = tranRot(keyp1, keyp2, matchesOdom);
+		//Initial epipolar geometry between the 2 current frames
+    tie(t,R) = getInitPose(keyp1, keyp2, matchesOdom, K);
 
 		Rodrigues(R, rotDiff, noArray());
 		vector<Point3d> siftX;
@@ -253,13 +258,18 @@ public:
 		//cout << velocity << endl;
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgMatchesDist > avgDistThresh)//Safeguard, image is still if avgMatches is higher than a threshold
 		{
-		Rodrigues(Rpos, rot, noArray()); //Converts rotation matrix to rotation vector
-		Rodrigues(R, rotDiff, noArray());//Same as above but with the difference in Yaw
+		Rodrigues(Rpos, rot, noArray()); 			//Converts rotation matrix to rotation vector
+		Rodrigues(R, rotDiff, noArray());			//Same as above but with the
 		yawDiff = rotDiff.at<double>(1,0);
-		yaw = rot.at<double>(1,0); //Yaw for publishing odom message
-
-		tpos = tpos + Rpos*t;//The scaled estimate is updated here
-		//tpos = tpos + Rpos*t*curscale; 			//The scaled estimate is updated here
+		yaw = rot.at<double>(1,0); 						//Yaw for publishing odom message
+		if(scaleRecoveryMode)
+		{
+			tpos = tpos + Rpos*t*curScale; 			//The scaled estimate is updated here
+		}
+		else
+		{
+		tpos = tpos + Rpos*t;					//The scaled estimate is updated here
+	  }
 		Rpos = R*Rpos;								//The rotation matrix updated after
 
 		}

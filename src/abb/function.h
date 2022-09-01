@@ -19,19 +19,12 @@
 using namespace cv;
 using namespace std;
 
-// Return the image circled with the keypoints, the calculation time
-// and the amount of keypoints
-Mat ORB_(Mat image, vector<KeyPoint> keypoints);
-Mat BRIEF(Mat image, vector<KeyPoint> keypoints);
-Mat FLANN(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio);
+
 vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio);
-tuple <Mat, Mat> tranRot(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<DMatch> matches);
+tuple <Mat, Mat> getInitPose(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<DMatch> matches, Mat cam);
 tuple <Mat, Mat> displacement(Mat img1, Mat img2);
-Mat zhangCalib(vector<string> fileNames, int cols, int rows);
 
 tuple <Mat, vector<KeyPoint>> detectFeatures(Mat img);
-
-// New functions
 vector<KeyPoint> Bucketing(Mat img, int gridX, int gridY, int max);
 bool isRotationMatrix(Mat &R);
 tuple <float, float, float> rotationMatrixToEulerAngles(Mat &R);
