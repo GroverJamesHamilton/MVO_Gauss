@@ -28,7 +28,9 @@
 #include "message_filters/subscriber.h"
 #include <tf2_ros/transform_listener.h>
 
+//Algorithm iteration index
 double it = 1;
+//Frame parameters for different purposes
 Mat oldIm, oldIm0, Im, Im0, crop, oldCrop;
 Mat scaleIm, oldScaleIm;
 //Below are the rotation and translation matrices used for different purposes
@@ -40,12 +42,14 @@ Mat rot = cv::Mat::eye(3,3,CV_64F);
 Mat rotDiff = cv::Mat::eye(3,3,CV_64F);
 Mat t = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 Mat tprev = cv::Mat::zeros(cv::Size(1,3), CV_64F);
-
+//Transformed projection matrices, for the scale recovery
 cv::Mat PkHat, Pk;
 Mat Pk_1Hat = cv::Mat::eye(cv::Size(4,3), CV_64F);
+//Features, descriptors, matches
 vector<KeyPoint> keyp1, keyp2, keyp3, keyp4;
 Mat desc1, desc2, desc3, desc4;
 vector<DMatch> matchesOdom, matches2;
+//Triangulated 3D-points
 cv::Mat point3d, pointX;
 vector<Point2d> scene1, scene2, scene3, scene4;
 //For publishing the yaw parameters
@@ -135,7 +139,9 @@ double yawprevGT = -3.00251;
 
 double velocity;
 
+//Change parameters here:
 bool scaleRecoveryMode = false;
+int queueSize = 50;
 
 //Ground truth callback: Fetches values from node /tf
 void tfCb(const tf2_msgs::TFMessage::ConstPtr& tf_msg)
@@ -171,7 +177,8 @@ public:
     : it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
-		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", 50, &ImageConverter::imageCb, this);
+																//Replace this with your topic below//
+		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", queueSize, &ImageConverter::imageCb, this);
 		//image_sub_ = it_.subscribe("/kitti/camera_gray/right/image_rect", 50, &ImageConverter::imageCb, this);
 		//image_sub_ = it_.subscribe("/kitti/camera_gray/right/image_rect", 1, &ImageConverter::imageCb, this);
     cv::namedWindow(OPENCV_WINDOW);
@@ -201,14 +208,18 @@ public:
 
   if (it == 1) //First frame to initialize
   {
-    oldIm0 = cv_ptr->image;
-    undistort(oldIm0, oldIm, K, dist, Mat());
-		oldCrop = oldIm(cropOdom); //
-    orbOdom->detectAndCompute(oldCrop, noArray(), keyp1, desc1, false);
 
-		oldScaleIm = oldIm(cropScale);
+    oldIm0 = cv_ptr->image; //Receive image
+		//Undistort with intrinsic matrix and dist parameters
+    undistort(oldIm0, oldIm, K, dist, Mat());
+		//Image is cropped if specified above
+		oldCrop = oldIm(cropOdom);
+		//Detect and descript features from the frame
+    orbOdom->detectAndCompute(oldCrop, noArray(), keyp1, desc1, false);
+		//Same with a subset of the frame is the scale recovery is wanted
 		if(scaleRecoveryMode)
 		{
+		oldScaleIm = oldIm(cropScale);
 		orbScale->detectAndCompute(oldScaleIm, noArray(), keyp3, desc3, false);
 	  }
   }
@@ -370,7 +381,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "image_converter");
 	ros::NodeHandle nTf; //Ground truth nodehandle
-	ros::Subscriber tf_msg = nTf.subscribe("/tf", 50, tfCb); //Ground truth message
+	ros::Subscriber tf_msg = nTf.subscribe("/tf", queueSize, tfCb); //Ground truth message
   ImageConverter ic;
   ros::spin();
   return 0;
