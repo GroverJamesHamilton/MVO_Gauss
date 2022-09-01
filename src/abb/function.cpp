@@ -37,7 +37,7 @@ Mat FLANN(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Ma
 	std::vector< std::vector<DMatch> > matches;
 	// Record start time
   auto begin = chrono::high_resolution_clock::now();
-	matcher->knnMatch(desc1, desc2, matches, 2);
+	matcher->knnMatch(desc1, desc2, matches, 3);
 	//-- Filter matches using the Lowe's ratio test
 const float ratio_thresh = ratio;
 std::vector<DMatch> good_matches;
@@ -69,6 +69,7 @@ imshow("Good Matches", img_matches_good);
 // Brute Force Matcher
 //
 vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio) {
+
 	if(desc1.type()!=CV_32F) {
 	    desc1.convertTo(desc1, CV_32F);
 			//cout << "Converting to CV_32F" << endl;
@@ -77,6 +78,7 @@ vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<Key
 	    desc2.convertTo(desc2, CV_32F);
 			//cout << "Converting to CV_32F" << endl;
 	}
+
 	//BFMatcher matcher;
 	Ptr<BFMatcher> matcher = BFMatcher::create(NORM_L2, false);
 	std::vector< std::vector<DMatch> > matches;
@@ -122,8 +124,8 @@ tuple <Mat, Mat> tranRot(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<
 		{0,612.8,367.35},
 		{0,0,1}};
 		double K_kitti[3][3] = {
-	 	 {718.856,0,607.1928},
-	 	 {0,718.856,185.2157},
+	 	 {959.791,0,696.0217},
+	 	 {0,956.9251,224.1806},
 	 	 {0,0,1}};
 		Mat K = Mat(3,3,CV_64F,K_kitti);
 if (matches.size() > 5) {
@@ -136,8 +138,8 @@ for( size_t i = 0; i < matches.size(); i++)
 		scene2.push_back( keyp2[ matches[i].trainIdx ].pt);
 }
 
-E = findEssentialMat(scene1, scene2, K, RANSAC, 0.999, 1);
-recoverPose(E, scene1, scene2, K, R, t, noArray());
+E = findEssentialMat(scene2, scene1, K, RANSAC, 0.999, 1);
+recoverPose(E, scene2, scene1, K, R, t, noArray());
 /*cout << "R:" << R << endl;
 cout << endl;
 cout << "t:" << t << endl;
@@ -249,15 +251,23 @@ return keyp;
 //
 Mat scaleUpdate(Mat K, Mat R_, Mat R, Mat t_, Mat t){
 
-Mat R0 = cv::Mat::eye(3,3,CV_64F);
-Mat A = R*R_.inv()*R0;
+//Mat R0 = cv::Mat::eye(3,3,CV_64F);
+Mat A = R*R_.inv();
 Mat B = t - R*R_.inv()*t_;
 Mat proj;
 hconcat(A,B,proj);
 Mat PkHat = K*proj;
-return PkHat;
 
+return proj;
 }
+
+Mat projMat(Mat K, Mat R, Mat t)
+{
+	Mat proj;
+	hconcat(R,t,proj);
+	return K*proj;
+}
+
 tuple <vector<Point2d>, vector<Point2d>> getPixLoc(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<DMatch> matches){
 	vector<Point2d> scene1, scene2;
 for( size_t i = 0; i < matches.size(); i++)
@@ -265,6 +275,7 @@ for( size_t i = 0; i < matches.size(); i++)
 		//-- Retrieve the keypoints from the good matches
 		scene1.push_back( keyp1[ matches[i].queryIdx ].pt);
 		scene2.push_back( keyp2[ matches[i].trainIdx ].pt);
+		//cout << keyp1[ matches[i].queryIdx ].pt << " " << keyp2[ matches[i].trainIdx ].pt << endl;
 }
 return{scene1, scene2};
 }
@@ -279,7 +290,7 @@ double avg(vector<double> v)
         }
         return return_value/n;
 }
-//Function for variance
+//Function for variance, help function to getScale
 double variance(vector<double> v,double mean)
 {
         double sum = 0.0;
@@ -295,74 +306,77 @@ double variance(vector<double> v,double mean)
 				return var;
 }
 
-double getScale(Mat point3d, Mat PkHat, vector<DMatch> matches, vector<KeyPoint> keyp2, double prevScale, double alpha, double height){
+//The main algorithm for scale recovery
+double getScale(Mat point3d,vector<Point2d> scene, Mat PkHat, double prevScale, double alpha, double height){
 int size;
-int outlierFactor = 2;
+double outlierFactor = 2; //Factor to remove outliers from the median value with repr. error lower than maxError
 vector<double> Yval, YvalFiltered;
-double W, Y, median, average, newScale;
+Mat E; //Reprojection error vector
+double maxError = 1000; //Max repr. error
+double X,Y,Z,W, x,y, median, avgY, newScale, e;
 	for(int i = 0; i<point3d.cols; i++){
+		//Obtain Triangulated 3D-points and their 2D correspondence from last frame
 		W = point3d.at<double>(i,3);
-		if(W != 0)
-		{
-		auto pix = keyp2[matches[i].trainIdx].pt;
+		X = point3d.at<double>(i,0)/W;
 		Y = point3d.at<double>(i,1)/W;
-		//cout << Y << endl;
-		if(Y > 0.7 && Y < 3 && Y != 1 && W > 1e-300)
+		Z = point3d.at<double>(i,2)/W;
+		x = scene[i].x;
+		y = scene[i].y;
+
+		double Xj[4][1] = {X, Y, Z, 1};
+		double xj[3][1] = {x, y, 1};
+		Mat XJ = Mat(4,1,CV_64F,Xj);
+		Mat xJ = Mat(3,1,CV_64F,xj);
+		//Calculate repr. error
+		E = xJ - PkHat*XJ;
+		e = sqrt(E.at<double>(0,0)*E.at<double>(0,0) + E.at<double>(0,1)*E.at<double>(0,1) + E.at<double>(0,2)*E.at<double>(0,2));
+		//Some values of Y are close to 1 which are erroneous, therefore removed in condition below (if abs(Y-1) > 0.001)
+		if(e < maxError && height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor && abs(Y-1) > 0.001)
 		{
-			//cout << "Ok value: " << Y << endl;
+			//cout << "Reprojection error: " << e << endl;
+			//cout << "Ok value: " << 1.65/Y << endl;
+			//cout << pix << endl;
+			//cout << endl;
 			Yval.push_back(Y);
 		}
-	  }
 		}
 size = Yval.size();
 //cout << "Size: " << size << endl;
-
-//cout << "Yval sorted: " << endl;
 sort(Yval.begin(), Yval.end());
 for(int i = 0; i < size; i++){
-//cout << Yval[i] << endl;
+//cout << 1.65/Yval[i] << endl;
 }
-
 if(size > 2)
 {
-if(size % 2 == 0)
+if(size % 2 == 0) //Size of valid Y-points are even
 {
 	median = (Yval[size/2-1] + Yval[size/2])/2;
-	//cout << "Median : " << median << endl;
 }
-if(size % 2 == 1)
+if(size % 2 == 1) //Size of valid Y-points are odd
 {
 	median = Yval[Yval.size()/2];
-	//cout << "Median : " << median << endl;
 }
-//cout << "Yval outliers removed: " << endl;
 for(int i = 0; i < size; i++){
+	//Remove last outliers
 	if(Yval[i] < outlierFactor*median && Yval[i] > median/outlierFactor)
 	{
 		YvalFiltered.push_back(Yval[i]);
-		//cout << Yval[i] << endl;
 	}
 }
-average = avg(YvalFiltered);
+avgY = avg(YvalFiltered);
 }
 else
 {
-	average = avg(Yval);
+	avgY = avg(Yval);
 }
 if(size == 0)
 {
-	average = height/prevScale;
-	//cout << "Failed" << endl;
+	avgY = height/prevScale; //Return previous scale if no valid points are found
 }
-//cout << "Size: " << size << endl;
-//cout << "Average: " << average << endl;
-newScale = (1 - alpha)*prevScale + alpha*height/average;
-//cout << "Average :" << average << endl;
-//cout << "newScale: " << newScale << endl;
-
+//Scale smoothing, no smoothing if input alpha = 1
+newScale = (1 - alpha)*prevScale + alpha*height/avgY;
 return newScale;
 }
-
 
 double avgMatchDist(vector<DMatch> matches)
 {
@@ -376,6 +390,7 @@ double sum = 0;
 	return avg;
 }
 
+
 double correctTimeDivide(double timeDiff, double sampleTime)
 {
 if(timeDiff < 1)
@@ -388,9 +403,91 @@ else
 	}
 }
 
+// Converts a rotation vector to rotation matrix
+Mat eulerAnglesToRotationMatrix(Mat rot)
+	{
+	    // Calculate rotation about x axis
+	    Mat R_x = (Mat_<double>(3,3) <<
+	               1,       0,              0,
+	               0,       cos(rot.at<int>(0,0)),   -sin(rot.at<int>(0,0)),
+	               0,       sin(rot.at<int>(0,0)),   cos(rot.at<int>(0,0))
+	               );
+	    // Calculate rotation about y axis
+	    Mat R_y = (Mat_<double>(3,3) <<
+	               cos(rot.at<int>(0,1)),    0,      sin(rot.at<int>(0,1)),
+	               0,               1,      0,
+	               -sin(rot.at<int>(0,1)),   0,      cos(rot.at<int>(0,1))
+	               );
+	    // Calculate rotation about z axis
+	    Mat R_z = (Mat_<double>(3,3) <<
+	               cos(rot.at<int>(0,2)),    -sin(rot.at<int>(0,2)),      0,
+	               sin(rot.at<int>(0,2)),    cos(rot.at<int>(0,2)),       0,
+	               0,               0,                  1);
+	    Mat R = R_z * R_y * R_x;
+	    return R;
+	}
+
+// Sifts out abnormaly large triangulated 3D-points and their 2D-point correspondences
+tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>> siftPoints(Mat X3D, vector<Point2d> scene1, vector<Point2d> scene2)
+{
+vector<Point2d> sift1;
+vector<Point2d> sift2;
+double Xs,Ys,Zs;
+int j = 0;
+vector<Point3d> coords;
+int limit = 1000;
+for(int i = 0; i < X3D.cols; i++){
+		Xs = X3D.at<double>(i,0)/X3D.at<double>(i,3);
+		Ys = X3D.at<double>(i,1)/X3D.at<double>(i,3);
+		Zs = X3D.at<double>(i,2)/X3D.at<double>(i,3);
+
+	if(abs(Xs) < limit && abs(Ys) < limit && abs(Zs) < limit) // This condition sifts out
+	{
+		coords.push_back({Xs,Ys,Zs});
+		sift1.push_back(scene1[i]);
+		sift2.push_back(scene2[i]);
+		j++;
+	}
+}
+return{coords, sift1, sift2};
+}
+
+// Returns the index of the triangulated 3D-point with the lowest reprojection error
+// Not currently used in the algorithm
+int poseRefiner(Mat K, Mat P, vector<Point3d> Xtriang, vector<Point2d> scene1, vector<Point2d> scene2)
+{
+// Repr.error = |xk - Xk*P|
+Mat Xk = cv::Mat::ones(cv::Size(1,4), CV_64F); //
+Mat xk = cv::Mat::ones(cv::Size(1,3), CV_64F);
+Mat E; // Reprojection error matrix xk - Xk*P
+double e; // Resulting reprojection error
+double min = 1000000; // Start with relative high value to compare repr.errors with
+int index;
+for (size_t i = 0; i < Xtriang.size(); i++)
+{
+// Form the current 3D-point from input with index i
+Xk.at<double>(0,0) = Xtriang[i].x;
+Xk.at<double>(0,1) = Xtriang[i].y;
+Xk.at<double>(0,2) = Xtriang[i].z;
+// Form the current Image-point from input with index i
+xk.at<double>(0,0) = scene2[i].x;
+xk.at<double>(0,1) = scene2[i].y;
+
+E = xk - P*Xk;
+e = sqrt(E.at<double>(0,0)*E.at<double>(0,0) + E.at<double>(0,1)*E.at<double>(0,1) + E.at<double>(0,2)*E.at<double>(0,2));
+
+if (e < min)
+{
+	min = e;
+	index = i;
+}
+}
+return index;
+}
+
 //
 //// SUACE - Speeded Up Adaptive Constrast Enhancement filter
-//
+// This function is not utilized by the current algorithm
 void performSUACE(Mat & src, Mat & dst, int distance, double sigma) {
 
 	CV_Assert(src.type() == CV_8UC1);

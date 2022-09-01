@@ -31,12 +31,12 @@ opencv2/opencv.hpp
 -
 opencv2/imgproc.hpp
 -
-opencv2/core/mat.hpp
+opencv2/core.hpp
+-
+opencv2/calib3d.hpp
 -
 function.h
 /home/labbare/abb_ws/src/abb/function.h
-typeinfo
--
 tf/transform_listener.h
 -
 tf/message_filter.h
@@ -45,6 +45,10 @@ message_filters/subscriber.h
 /home/labbare/abb_ws/src/abb/message_filters/subscriber.h
 tf2_ros/transform_listener.h
 -
+
+/home/labbare/abb_ws/src/abb/function.cpp
+function.h
+/home/labbare/abb_ws/src/abb/function.h
 
 /home/labbare/abb_ws/src/abb/function.h
 iostream
