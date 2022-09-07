@@ -1,4 +1,4 @@
-prefix=/home/labbare/abb_ws/install
+prefix=/home/alesm512/ABB_New_Msc/install
 
 Name: nav
 Description: Description of nav

@@ -1,8 +1,0 @@
-prefix=/home/labbare/abb_ws/src/abb/devel
-
-Name: abb
-Description: Description of abb
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

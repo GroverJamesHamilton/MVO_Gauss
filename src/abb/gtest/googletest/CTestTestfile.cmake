@@ -1,6 +1,6 @@
 # CMake generated Testfile for 
 # Source directory: /usr/src/googletest/googletest
-# Build directory: /home/labbare/abb_ws/src/abb/gtest/googletest
+# Build directory: /home/alesm512/ABB_New_Msc/src/abb/gtest/googletest
 # 
 # This file includes the relevant testing commands required for 
 # testing this directory and lists subdirectories to be tested as well.

@@ -1,8 +1,8 @@
-# Install script for directory: /home/labbare/abb_ws/src/imu
+# Install script for directory: /home/alesm512/ABB_New_Msc/src/imu
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/labbare/abb_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/alesm512/ABB_New_Msc/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -37,18 +37,23 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
+# Set default install directory permissions.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
+endif()
+
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/labbare/abb_ws/build/imu/catkin_generated/installspace/imu.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/build/imu/catkin_generated/installspace/imu.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/imu/cmake" TYPE FILE FILES
-    "/home/labbare/abb_ws/build/imu/catkin_generated/installspace/imuConfig.cmake"
-    "/home/labbare/abb_ws/build/imu/catkin_generated/installspace/imuConfig-version.cmake"
+    "/home/alesm512/ABB_New_Msc/build/imu/catkin_generated/installspace/imuConfig.cmake"
+    "/home/alesm512/ABB_New_Msc/build/imu/catkin_generated/installspace/imuConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/imu" TYPE FILE FILES "/home/labbare/abb_ws/src/imu/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/imu" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/src/imu/package.xml")
 endif()
 

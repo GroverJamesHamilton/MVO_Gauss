@@ -1,8 +1,8 @@
-# Install script for directory: /home/labbare/abb_ws/src/fusion
+# Install script for directory: /home/alesm512/ABB_New_Msc/src/fusion
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/labbare/abb_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/alesm512/ABB_New_Msc/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -37,18 +37,23 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
+# Set default install directory permissions.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
+endif()
+
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/labbare/abb_ws/build/fusion/catkin_generated/installspace/fusion.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/build/fusion/catkin_generated/installspace/fusion.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/fusion/cmake" TYPE FILE FILES
-    "/home/labbare/abb_ws/build/fusion/catkin_generated/installspace/fusionConfig.cmake"
-    "/home/labbare/abb_ws/build/fusion/catkin_generated/installspace/fusionConfig-version.cmake"
+    "/home/alesm512/ABB_New_Msc/build/fusion/catkin_generated/installspace/fusionConfig.cmake"
+    "/home/alesm512/ABB_New_Msc/build/fusion/catkin_generated/installspace/fusionConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/fusion" TYPE FILE FILES "/home/labbare/abb_ws/src/fusion/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/fusion" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/src/fusion/package.xml")
 endif()
 

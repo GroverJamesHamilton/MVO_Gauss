@@ -67,14 +67,14 @@ set(nav_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(nav_SOURCE_PREFIX /home/labbare/abb_ws/src/nav)
-  set(nav_DEVEL_PREFIX /home/labbare/abb_ws/devel)
+  set(nav_SOURCE_PREFIX /home/alesm512/ABB_New_Msc/src/nav)
+  set(nav_DEVEL_PREFIX /home/alesm512/ABB_New_Msc/devel)
   set(nav_INSTALL_PREFIX "")
   set(nav_PREFIX ${nav_DEVEL_PREFIX})
 else()
   set(nav_SOURCE_PREFIX "")
   set(nav_DEVEL_PREFIX "")
-  set(nav_INSTALL_PREFIX /home/labbare/abb_ws/install)
+  set(nav_INSTALL_PREFIX /home/alesm512/ABB_New_Msc/install)
   set(nav_PREFIX ${nav_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/labbare/abb_ws/install/lib;/opt/ros/noetic/lib)
+    foreach(path /home/alesm512/ABB_New_Msc/install/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

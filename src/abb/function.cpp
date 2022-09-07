@@ -7,6 +7,7 @@ using namespace std;
 //
 vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio) {
 //Makes sure descriptors are the right data type
+/*
 	if(desc1.type()!=CV_32F) {
 	    desc1.convertTo(desc1, CV_32F);
 			//cout << "Converting to CV_32F" << endl;
@@ -15,9 +16,10 @@ vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<Key
 	    desc2.convertTo(desc2, CV_32F);
 			//cout << "Converting to CV_32F" << endl;
 	}
-	Ptr<BFMatcher> matcher = BFMatcher::create(NORM_L2, false);
-	std::vector< std::vector<DMatch> > matches;
-	std::vector<DMatch> good_matches;
+*/
+	Ptr<BFMatcher> matcher = BFMatcher::create(NORM_HAMMING2, false);
+	vector< vector<DMatch> > matches;
+	vector<DMatch> good_matches;
   if (keyp1.size() > 3 && keyp2.size() > 3) { //Minimum amount of features needed from both frames
 	//Extract feature matches
 	matcher->knnMatch(desc1, desc2, matches, 2);
@@ -25,6 +27,8 @@ vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<Key
 const float ratio_thresh = ratio;
 for (size_t i = 0; i < matches.size(); i++)
 {
+		//cout << "Dist1: " << matches[i][0].distance << endl;
+		//cout << "Dist2: " << matches[i][1].distance << endl;
 		if (matches[i][0].distance < ratio_thresh * matches[i][1].distance)
 		{
 				good_matches.push_back(matches[i][0]);
@@ -53,7 +57,7 @@ for( size_t i = 0; i < matches.size(); i++)
 }
 
 //Estimating the epipolar geometry between the 2 frames with a RANSAC scheme
-E = findEssentialMat(scene2, scene1, cam, RANSAC, 0.999, 1);
+E = findEssentialMat(scene2, scene1, cam, RANSAC, 0.99, 1);
 recoverPose(E, scene2, scene1, cam, R, t, noArray());
 }
 return {t,R};
@@ -172,7 +176,7 @@ int size;
 double outlierFactor = 2; //Factor to remove outliers from the median value with repr. error lower than maxError
 vector<double> Yval, YvalFiltered;
 Mat E; //Reprojection error vector
-double maxError = 1000; //Max repr. error
+double maxError = 250; //Max repr. error
 double X,Y,Z,W, x,y, median, avgY, newScale, e;
 	for(int i = 0; i<point3d.cols; i++){
 		//Obtain Triangulated 3D-points and their 2D correspondence from last frame
@@ -191,17 +195,17 @@ double X,Y,Z,W, x,y, median, avgY, newScale, e;
 		E = xJ - PkHat*XJ;
 		e = sqrt(E.at<double>(0,0)*E.at<double>(0,0) + E.at<double>(0,1)*E.at<double>(0,1) + E.at<double>(0,2)*E.at<double>(0,2));
 		//Some values of Y are close to 1 which are erroneous, therefore removed in condition below (if abs(Y-1) > 0.001)
-		if(e < maxError && height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor && abs(Y-1) > 0.001)
+		if(e < maxError && Y > 0.01 && abs(Y-1) > 0.01) //&& height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor
 		{
-			//cout << "Reprojection error: " << e << endl;
-			//cout << "Ok value: " << 1.65/Y << endl;
+			cout << "Reprojection error: " << e << endl;
+			cout << "Ok value: " << 1.65/Y << endl;
 			//cout << pix << endl;
 			//cout << endl;
 			Yval.push_back(Y);
 		}
 		}
 size = Yval.size();
-//cout << "Size: " << size << endl;
+cout << "Size: " << size << endl;
 sort(Yval.begin(), Yval.end());
 for(int i = 0; i < size; i++){
 //cout << 1.65/Yval[i] << endl;

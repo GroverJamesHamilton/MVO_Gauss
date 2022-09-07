@@ -1,8 +1,8 @@
-# Install script for directory: /home/labbare/abb_ws/src/odom
+# Install script for directory: /home/alesm512/ABB_New_Msc/src/odom
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/labbare/abb_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/alesm512/ABB_New_Msc/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -37,18 +37,23 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
+# Set default install directory permissions.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
+endif()
+
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/labbare/abb_ws/build/odom/catkin_generated/installspace/odom.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/build/odom/catkin_generated/installspace/odom.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/odom/cmake" TYPE FILE FILES
-    "/home/labbare/abb_ws/build/odom/catkin_generated/installspace/odomConfig.cmake"
-    "/home/labbare/abb_ws/build/odom/catkin_generated/installspace/odomConfig-version.cmake"
+    "/home/alesm512/ABB_New_Msc/build/odom/catkin_generated/installspace/odomConfig.cmake"
+    "/home/alesm512/ABB_New_Msc/build/odom/catkin_generated/installspace/odomConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/odom" TYPE FILE FILES "/home/labbare/abb_ws/src/odom/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/odom" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/src/odom/package.xml")
 endif()
 

@@ -91,7 +91,7 @@ double avgDistThresh = 10;
 //Primarily: The max numbers of features and FAST threshold are the most crucial parameters
 //to change since they have the most impact
 
-Ptr<ORB> orbOdom = cv::ORB::create(1000, //Max number of features
+Ptr<ORB> orbOdom = cv::ORB::create(800, //Max number of features
 		1.25f,															 //Pyramid decimation ratio > 1
 		8,																	 //Number of pyramid levels
 		16,																	 //Edge threshold
@@ -99,16 +99,16 @@ Ptr<ORB> orbOdom = cv::ORB::create(1000, //Max number of features
 		3,																	 //WTA_K
 		ORB::FAST_SCORE,										 //Which algorithm is used to rank features, either FAST_SCORE or HARRIS_SCORE
 	  31,                                  //Descriptor patch size
-		6);                                  //The FAST threshold
+		9);                                  //The FAST threshold
 //For the scale recovery
-Ptr<ORB> orbScale = cv::ORB::create(500,
+Ptr<ORB> orbScale = cv::ORB::create(400,
 		1.2f,
 		8,
 		16,
 		0,
 		3,
 		ORB::HARRIS_SCORE,
-		31, // Descriptor patch size
+		16, // Descriptor patch size
 		10);
 //The camera matrix dist. coeffs for the KITTI dataset
 	double kOdom[3][3] = {
@@ -140,8 +140,8 @@ double yawprevGT = -3.00251;
 double velocity;
 
 //Change parameters here:
-bool scaleRecoveryMode = false;
-int queueSize = 50;
+bool scaleRecoveryMode = true;
+int queueSize = 70;
 
 //Ground truth callback: Fetches values from node /tf
 void tfCb(const tf2_msgs::TFMessage::ConstPtr& tf_msg)
@@ -208,10 +208,8 @@ public:
 
   if (it == 1) //First frame to initialize
   {
-
-    oldIm0 = cv_ptr->image; //Receive image
-		//Undistort with intrinsic matrix and dist parameters
-    undistort(oldIm0, oldIm, K, dist, Mat());
+    oldIm = cv_ptr->image; //Receive image
+    //undistort(oldIm0, oldIm, K, dist, Mat());
 		//Image is cropped if specified above
 		oldCrop = oldIm(cropOdom);
 		//Detect and descript features from the frame
@@ -223,8 +221,8 @@ public:
 		orbScale->detectAndCompute(oldScaleIm, noArray(), keyp3, desc3, false);
 	  }
   }
-    Im0 = cv_ptr->image;
-    undistort(Im0, Im, K, dist, Mat());
+    Im = cv_ptr->image;
+    //undistort(Im0, Im, K, dist, Mat());
 		crop = Im(cropOdom);
     orbOdom->detectAndCompute(crop, noArray(), keyp2, desc2, false);
 
@@ -235,9 +233,9 @@ public:
 	  }
     if(keyp1.size() > 6 || keyp2.size() > 6) //Segmentation fault if detected features are lower than 5
     {
-    matchesOdom = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.5);
-		matches2 = BruteForce(oldScaleIm, scaleIm, keyp3, keyp4, desc3, desc4, 0.5);
-
+    matchesOdom = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.78);
+		matches2 = BruteForce(oldScaleIm, scaleIm, keyp3, keyp4, desc3, desc4, 1);
+	  cout << "Matches size: " << matches2.size() << endl;
 		//For triangulation, the matching 2D-correspondences from both frames are collected
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matchesOdom);
 		//Same for the smaller frame if we want to revocer scale as well
@@ -250,24 +248,24 @@ public:
     tie(t,R) = getInitPose(keyp1, keyp2, matchesOdom, K);
 
 		Rodrigues(R, rotDiff, noArray());
-		vector<Point3d> siftX;
+		vector<Point3d> Xground;
 	  vector<Point2d> sift1;
 		vector<Point2d> sift2;
-		avgMatchesDist = avgMatchDist(matchesOdom); //Average distance of
 
 		//Where the scale recovery is obtained
 		if(scaleRecoveryMode)
 		{
+		//PkHat = scaleUpdate(Kscale, Rprev, R, tprev, t); //The scale
 		PkHat = scaleUpdate(Kscale, Rprev, Rprev*R, tprev, tprev + Rprev*t); //The scale
 		cv::triangulatePoints(Kscale*Pk_1Hat, PkHat, scene3, scene4, point3d);
 		curScale = getScale(point3d, scene4, PkHat, prevScale, alpha, camHeight);
 		prevScale = curScale;
 		cout << curScale << "," << scaleGT << ";" << endl;
-	  }
+	}
 		//velocity = curScale/correctTimeDivide(timeDiff, sampleTime); //Scale is the total displacement in meters, over the time of 100ms the velocity can be found
 		//cout << "Total velocity: " << velocity << " m/s" << endl; //Display total velocity
 		//cout << velocity << endl;
-		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && avgMatchesDist > avgDistThresh)//Safeguard, image is still if avgMatches is higher than a threshold
+		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1)//Safeguard, image is still if avgMatches is higher than a threshold
 		{
 		Rodrigues(Rpos, rot, noArray()); 			//Converts rotation matrix to rotation vector
 		Rodrigues(R, rotDiff, noArray());			//Same as above but with the

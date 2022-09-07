@@ -1,4 +1,4 @@
-prefix=/home/labbare/abb_ws/devel
+prefix=/home/alesm512/ABB_New_Msc/devel
 
 Name: fusion
 Description: Description of fusion

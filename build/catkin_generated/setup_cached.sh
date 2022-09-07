@@ -7,9 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/labbare/abb_ws/devel:$CMAKE_PREFIX_PATH"
-export LD_LIBRARY_PATH="/home/labbare/abb_ws/devel/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="/home/labbare/abb_ws/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PWD='/home/labbare/abb_ws/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/home/labbare/abb_ws/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/home/labbare/abb_ws/src:$ROS_PACKAGE_PATH"
+export CMAKE_PREFIX_PATH="/home/alesm512/ABB_New_Msc/devel:$CMAKE_PREFIX_PATH"
+export PWD='/home/alesm512/ABB_New_Msc/build'
+export ROSLISP_PACKAGE_DIRECTORIES='/home/alesm512/ABB_New_Msc/devel/share/common-lisp'
+export ROS_PACKAGE_PATH="/home/alesm512/ABB_New_Msc/src:$ROS_PACKAGE_PATH"

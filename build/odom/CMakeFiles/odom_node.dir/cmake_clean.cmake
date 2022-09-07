@@ -1,7 +1,8 @@
 file(REMOVE_RECURSE
-  "/home/labbare/abb_ws/devel/lib/odom/odom_node"
-  "/home/labbare/abb_ws/devel/lib/odom/odom_node.pdb"
+  "/home/alesm512/ABB_New_Msc/devel/lib/odom/odom_node"
+  "/home/alesm512/ABB_New_Msc/devel/lib/odom/odom_node.pdb"
   "CMakeFiles/odom_node.dir/src/odom_node.cpp.o"
+  "CMakeFiles/odom_node.dir/src/odom_node.cpp.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

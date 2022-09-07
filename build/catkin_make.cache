@@ -1,2 +1,2 @@
-abb:fusion:imu:nav:odom:robot_localization
--DCATKIN_DEVEL_PREFIX=/home/labbare/abb_ws/devel -DCMAKE_INSTALL_PREFIX=/home/labbare/abb_ws/install -G Unix Makefiles
+abb:fusion:imu:nav:odom
+-DCATKIN_DEVEL_PREFIX=/home/alesm512/ABB_New_Msc/devel -DCMAKE_INSTALL_PREFIX=/home/alesm512/ABB_New_Msc/install -G Unix Makefiles
