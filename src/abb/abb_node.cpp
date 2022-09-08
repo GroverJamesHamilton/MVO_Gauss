@@ -35,6 +35,7 @@ Mat oldIm, oldIm0, Im, Im0, crop, oldCrop;
 Mat scaleIm, oldScaleIm;
 //Below are the rotation and translation matrices used for different purposes
 Mat R = cv::Mat::eye(3,3,CV_64F); // Rotation matrix from epipolar geometry between 2 frames
+Mat Rn = cv::Mat::eye(3,3,CV_64F); // Rotation matrix from epipolar geometry between 2 frames
 Mat Rpos = cv::Mat::eye(3,3,CV_64F); // Rotation matrix
 Mat Rprev = cv::Mat::eye(3,3,CV_64F);
 Mat tpos = cv::Mat::zeros(cv::Size(1,3), CV_64F);
@@ -73,10 +74,10 @@ int xO1 = 0;
 int yO1 = 0;
 cv::Rect cropOdom(xO1, yO1, xpix - 2*xO1, ypix - yO1);
 //Scale recovery frame
-int xO2 = 200;
+int xO2 = 300;
 int yO2 = 200;
-//cv::Rect cropScale(xO2, yO2, xpix - 2*xO2, ypix - yO2); //Only a small subset of the frame is extracted
-cv::Rect cropScale(xO2, yO2, 500, ypix - yO2); //Frame for least scale recovery error, depends on the
+cv::Rect cropScale(xO2, yO2, xpix - 2*xO2, ypix - yO2); //Only a small subset of the frame is extracted
+//cv::Rect cropScale(xO2, yO2, 500, ypix - yO2); //Frame for least scale recovery error, depends on the
 //The printed trajectory, Mainly for visually
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
@@ -101,7 +102,7 @@ Ptr<ORB> orbOdom = cv::ORB::create(800, //Max number of features
 	  31,                                  //Descriptor patch size
 		9);                                  //The FAST threshold
 //For the scale recovery
-Ptr<ORB> orbScale = cv::ORB::create(400,
+Ptr<ORB> orbScale = cv::ORB::create(450,
 		1.2f,
 		8,
 		16,
@@ -110,6 +111,7 @@ Ptr<ORB> orbScale = cv::ORB::create(400,
 		ORB::HARRIS_SCORE,
 		16, // Descriptor patch size
 		10);
+
 //The camera matrix dist. coeffs for the KITTI dataset
 	double kOdom[3][3] = {
 	  {959.791,0,696.0217 - xO1}, //Principal point needs to be offset if image is cropped
@@ -142,6 +144,10 @@ double velocity;
 //Change parameters here:
 bool scaleRecoveryMode = true;
 int queueSize = 70;
+
+///vector <Point2f> source = {Point2f(570,235), Point2f(672,235), Point2f(421,375)};
+///vector <Point2f> dest = {Point2f(0,0), Point2f(400,0), Point2f(0,140)};
+///Mat affineMatrix = getAffineTransform(source, dest);
 
 //Ground truth callback: Fetches values from node /tf
 void tfCb(const tf2_msgs::TFMessage::ConstPtr& tf_msg)
@@ -208,8 +214,7 @@ public:
 
   if (it == 1) //First frame to initialize
   {
-    oldIm = cv_ptr->image; //Receive image
-    //undistort(oldIm0, oldIm, K, dist, Mat());
+    oldIm = cv_ptr->image; //Receive image //undistort(oldIm0, oldIm, K, dist, Mat());
 		//Image is cropped if specified above
 		oldCrop = oldIm(cropOdom);
 		//Detect and descript features from the frame
@@ -221,9 +226,11 @@ public:
 		orbScale->detectAndCompute(oldScaleIm, noArray(), keyp3, desc3, false);
 	  }
   }
-    Im = cv_ptr->image;
-    //undistort(Im0, Im, K, dist, Mat());
+    Im = cv_ptr->image;  //undistort(Im0, Im, K, dist, Mat());
 		crop = Im(cropOdom);
+		///Mat warp = Mat::zeros(140, 400, crop.type());
+		///warpAffine(crop, warp, affineMatrix, warp.size());
+		///imshow("Warped image", warp);
     orbOdom->detectAndCompute(crop, noArray(), keyp2, desc2, false);
 
 		scaleIm = oldIm(cropScale);
@@ -234,8 +241,8 @@ public:
     if(keyp1.size() > 6 || keyp2.size() > 6) //Segmentation fault if detected features are lower than 5
     {
     matchesOdom = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.78);
-		matches2 = BruteForce(oldScaleIm, scaleIm, keyp3, keyp4, desc3, desc4, 1);
-	  cout << "Matches size: " << matches2.size() << endl;
+		matches2 = BruteForce(oldScaleIm, scaleIm, keyp3, keyp4, desc3, desc4, 0.75);
+	  //cout << "Matches size: " << matches2.size() << endl;
 		//For triangulation, the matching 2D-correspondences from both frames are collected
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matchesOdom);
 		//Same for the smaller frame if we want to revocer scale as well
@@ -248,12 +255,19 @@ public:
     tie(t,R) = getInitPose(keyp1, keyp2, matchesOdom, K);
 
 		Rodrigues(R, rotDiff, noArray());
-		vector<Point3d> Xground;
+		Mat Xground;
 	  vector<Point2d> sift1;
 		vector<Point2d> sift2;
 
+		if(it == 500)
+		{
+			Mat P = projMat(Kscale, R, t);
+			cv::triangulatePoints(Kscale*Pk_1Hat, P, scene3, scene4, Xground);
+			//disp(Xground);
+		}
+
 		//Where the scale recovery is obtained
-		if(scaleRecoveryMode)
+		if(scaleRecoveryMode && it > 2)
 		{
 		//PkHat = scaleUpdate(Kscale, Rprev, R, tprev, t); //The scale
 		PkHat = scaleUpdate(Kscale, Rprev, Rprev*R, tprev, tprev + Rprev*t); //The scale
@@ -261,7 +275,7 @@ public:
 		curScale = getScale(point3d, scene4, PkHat, prevScale, alpha, camHeight);
 		prevScale = curScale;
 		cout << curScale << "," << scaleGT << ";" << endl;
-	}
+	  }
 		//velocity = curScale/correctTimeDivide(timeDiff, sampleTime); //Scale is the total displacement in meters, over the time of 100ms the velocity can be found
 		//cout << "Total velocity: " << velocity << " m/s" << endl; //Display total velocity
 		//cout << velocity << endl;
@@ -271,7 +285,7 @@ public:
 		Rodrigues(R, rotDiff, noArray());			//Same as above but with the
 		yawDiff = rotDiff.at<double>(1,0);
 		yaw = rot.at<double>(1,0); 						//Yaw for publishing odom message
-		if(scaleRecoveryMode)
+		if(scaleRecoveryMode && it > 2)
 		{
 			tpos = tpos + Rpos*t*curScale; 			//The scaled estimate is updated here
 		}
@@ -342,7 +356,7 @@ public:
   	oldIm = Im.clone();
     keyp1 = keyp2;
     desc1 = desc2.clone();
-		if(scaleRecoveryMode)
+		if(scaleRecoveryMode && it > 2)
 		{
 		oldScaleIm = scaleIm.clone();
     keyp3 = keyp4;

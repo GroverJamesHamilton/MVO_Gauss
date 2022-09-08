@@ -176,8 +176,8 @@ int size;
 double outlierFactor = 2; //Factor to remove outliers from the median value with repr. error lower than maxError
 vector<double> Yval, YvalFiltered;
 Mat E; //Reprojection error vector
-double maxError = 250; //Max repr. error
-double X,Y,Z,W, x,y, median, avgY, newScale, e;
+double maxError = 500; //Max repr. error
+double X,Y,Z,W, x,y, median, avgY, newScale, e, distance;
 	for(int i = 0; i<point3d.cols; i++){
 		//Obtain Triangulated 3D-points and their 2D correspondence from last frame
 		W = point3d.at<double>(i,3);
@@ -195,10 +195,12 @@ double X,Y,Z,W, x,y, median, avgY, newScale, e;
 		E = xJ - PkHat*XJ;
 		e = sqrt(E.at<double>(0,0)*E.at<double>(0,0) + E.at<double>(0,1)*E.at<double>(0,1) + E.at<double>(0,2)*E.at<double>(0,2));
 		//Some values of Y are close to 1 which are erroneous, therefore removed in condition below (if abs(Y-1) > 0.001)
-		if(e < maxError && Y > 0.01 && abs(Y-1) > 0.01) //&& height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor
+		if(e < maxError && abs(Y-1) > 0.1 && abs(1.65/Y - prevScale) < 0.3 && Y > 0) //&& height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor
+		//if(e < maxError && abs(Y-1) > 0.1 && Y > 0) //&& height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor
 		{
-			cout << "Reprojection error: " << e << endl;
-			cout << "Ok value: " << 1.65/Y << endl;
+			//distance = sqrt(pow(x-496,2)+pow(y-24,2));
+			//cout << "Reprojection error: " << e << endl;
+			//cout << "Ok: " << 1.65/Y << endl;
 			//cout << pix << endl;
 			//cout << endl;
 			Yval.push_back(Y);
@@ -291,6 +293,17 @@ Mat eulerAnglesToRotationMatrix(Mat rot)
 	    return R;
 	}
 
+Mat neglectPitchRoll(Mat R)
+{
+	Mat rot;
+	Rodrigues(R, rot, noArray());
+	rot.at<double>(0,0) = 0;
+	rot.at<double>(2,0) = 0;
+	//cout << rot*180/3.14159 << endl;
+	Mat Rn = eulerAnglesToRotationMatrix(rot);
+	return Rn;
+}
+
 // Sifts out abnormaly large triangulated 3D-points and their 2D-point correspondences
 tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>> siftPoints(Mat X3D, vector<Point2d> scene1, vector<Point2d> scene2)
 {
@@ -347,6 +360,20 @@ if (e < min)
 }
 }
 return index;
+}
+
+void disp(Mat Xg)
+{
+	double X,Y,Z,W;
+
+		for(int i = 0; i< Xg.cols; i++){
+			//Obtain Triangulated 3D-points and their 2D correspondence from last frame
+			W = Xg.at<double>(i,3);
+			X = Xg.at<double>(i,0)/W;
+			Y = Xg.at<double>(i,1)/W;
+			Z = Xg.at<double>(i,2)/W;
+			cout << "X: " << X << " Y: " << Y << " Z: " << Z << endl;
+}
 }
 
 //

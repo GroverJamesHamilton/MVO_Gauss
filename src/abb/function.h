@@ -19,7 +19,6 @@
 using namespace cv;
 using namespace std;
 
-
 vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio);
 tuple <Mat, Mat> getInitPose(vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, vector<DMatch> matches, Mat cam);
 tuple <Mat, Mat> displacement(Mat img1, Mat img2);
@@ -41,4 +40,6 @@ Mat projMat(Mat K, Mat R, Mat t);
 tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>> siftPoints(Mat X3D, vector<Point2d> scene1, vector<Point2d> scene2);
 Mat eulerAnglesToRotationMatrix(Mat rot);
 int poseRefiner(Mat K, Mat P, vector<Point3d> Xtriang, vector<Point2d> scene1, vector<Point2d> scene2);
+void disp(Mat Xg);
+Mat neglectPitchRoll(Mat R);
 #endif
