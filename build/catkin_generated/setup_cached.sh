@@ -7,7 +7,5 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/alesm512/ABB_New_Msc/devel:$CMAKE_PREFIX_PATH"
+export PKG_CONFIG_PATH="/home/alesm512/ABB_New_Msc/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/home/alesm512/ABB_New_Msc/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/home/alesm512/ABB_New_Msc/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/home/alesm512/ABB_New_Msc/src:$ROS_PACKAGE_PATH"

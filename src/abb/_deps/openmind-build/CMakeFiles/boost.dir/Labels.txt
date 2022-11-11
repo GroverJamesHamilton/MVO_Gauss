@@ -1,0 +1,13 @@
+# Target labels
+ boost
+# Source files and their labels
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/CMakeFiles/boost
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/CMakeFiles/boost.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/CMakeFiles/boost-complete.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-build.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-configure.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-download.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-install.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-mkdir.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-patch.rule
+/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-update.rule

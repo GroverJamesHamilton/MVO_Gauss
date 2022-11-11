@@ -1,41 +1,36 @@
 #include <iostream>
 #include <vector>
-
 // ROS
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CameraInfo.h> //
-
 // Odometry node handling
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
-
 // OpenCV
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/features2d/features2d.hpp"
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>
 //Own-made functions from function.cpp
 #include "function.h"
-//#include <typeinfo> //
-
 //For tf, ground truth data in KITTI datasets are stored here
 #include <tf/transform_listener.h>
 #include "tf/message_filter.h"
 #include "message_filters/subscriber.h"
 #include <tf2_ros/transform_listener.h>
-
+#include <opencv2/viz.hpp>
 //Algorithm iteration index
 double it = 1;
 //Frame parameters for different purposes
-Mat oldIm, oldIm0, Im, Im0, crop, oldCrop;
-Mat scaleIm, oldScaleIm;
+Mat oldIm, oldIm0, Im, Im0, ImS, oldImS;
 //Below are the rotation and translation matrices used for different purposes
 Mat R = cv::Mat::eye(3,3,CV_64F); // Rotation matrix from epipolar geometry between 2 frames
-Mat Rn = cv::Mat::eye(3,3,CV_64F); // Rotation matrix from epipolar geometry between 2 frames
 Mat Rpos = cv::Mat::eye(3,3,CV_64F); // Rotation matrix
 Mat Rprev = cv::Mat::eye(3,3,CV_64F);
 Mat tpos = cv::Mat::zeros(cv::Size(1,3), CV_64F);
@@ -44,55 +39,46 @@ Mat rotDiff = cv::Mat::eye(3,3,CV_64F);
 Mat t = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 Mat tprev = cv::Mat::zeros(cv::Size(1,3), CV_64F);
 //Transformed projection matrices, for the scale recovery
-cv::Mat PkHat, Pk;
+cv::Mat PkHat;
 Mat Pk_1Hat = cv::Mat::eye(cv::Size(4,3), CV_64F);
 //Features, descriptors, matches
-vector<KeyPoint> keyp1, keyp2, keyp3, keyp4;
-Mat desc1, desc2, desc3, desc4;
-vector<DMatch> matchesOdom, matches2;
+vector<KeyPoint> keyp1, keyp2, keyp3, keyp4, keyp5, keyp6;
+Mat desc1, desc2, desc3, desc4, desc5, desc6;
+vector<DMatch> matchesOdom, matches2, matches3;
 //Triangulated 3D-points
 cv::Mat point3d, pointX;
-vector<Point2d> scene1, scene2, scene3, scene4;
+vector<Point2d> scene1, scene2, scene3, scene4, scene5, scene6;
 //For publishing the yaw parameters
 float yaw, yawDiff, yawVel;
-
 double sampleTime = 0.103; //The sample time for the rosbag dataset in ms, default would be 100 or 100/3
 //Display parameters
-double dim = 350;
-double dimShow = 700;
+double dim = 200;
+double dimShow = 500;
 double showScale = dimShow/dim;
 //Scale recovery parameters
-double curScale = 0.9;
-double prevScale = 0.9;
+double curScale = 1;
+double prevScale = 1;
 double alpha = 1; //Scale smoothing parameters, alpha = [0 1], 1 is no smoothing
 double camHeight = 1.65; //Camera height, for scale recovery
-//Frame size and cropping parameters:
-//Odometry frame
-int xpix = 1240;
+vector<Point3d> Xground;
+vector<Point2d> sift1, sift2;
+//Scale recovery frame cropping
+int xpix = 1242;
 int ypix = 375;
-int xO1 = 0;
-int yO1 = 0;
-cv::Rect cropOdom(xO1, yO1, xpix - 2*xO1, ypix - yO1);
-//Scale recovery frame
-int xO2 = 300;
-int yO2 = 200;
+
+int xO2 = 450;
+int yO2 = 225;
 cv::Rect cropScale(xO2, yO2, xpix - 2*xO2, ypix - yO2); //Only a small subset of the frame is extracted
-//cv::Rect cropScale(xO2, yO2, 500, ypix - yO2); //Frame for least scale recovery error, depends on the
 //The printed trajectory, Mainly for visually
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
 int X,Y; //Pixel location to print trajectory
 double x,y,vx,vy;
-//To determine if the camera is still between images, depends on dataset
-double avgMatchesDist;
-double avgDistThresh = 10;
-
 //Initialize the ORB detectors/descriptors
 //For the unscaled visual odometry
 //Primarily: The max numbers of features and FAST threshold are the most crucial parameters
 //to change since they have the most impact
-
-Ptr<ORB> orbOdom = cv::ORB::create(800, //Max number of features
+Ptr<ORB> orbOdom = cv::ORB::create(840, //Max number of features
 		1.25f,															 //Pyramid decimation ratio > 1
 		8,																	 //Number of pyramid levels
 		16,																	 //Edge threshold
@@ -101,36 +87,35 @@ Ptr<ORB> orbOdom = cv::ORB::create(800, //Max number of features
 		ORB::FAST_SCORE,										 //Which algorithm is used to rank features, either FAST_SCORE or HARRIS_SCORE
 	  31,                                  //Descriptor patch size
 		9);                                  //The FAST threshold
+
 //For the scale recovery
-Ptr<ORB> orbScale = cv::ORB::create(450,
-		1.2f,
-		8,
-		16,
-		0,
-		3,
-		ORB::HARRIS_SCORE,
-		16, // Descriptor patch size
-		10);
+Ptr<ORB> orbScale = cv::ORB::create(3000, 1.1f, 12, 5, 0, 2, ORB::HARRIS_SCORE, 40, 25);
+
+double fx = 718.856; //903.7596
+double fy = 718.856; //901.9653
+double ox = 607.1928; //695.7519
+double oy = 185.2157; //224.2509
 
 //The camera matrix dist. coeffs for the KITTI dataset
-	double kOdom[3][3] = {
-	  {959.791,0,696.0217 - xO1}, //Principal point needs to be offset if image is cropped
-	  {0,956.9251,224.1806 - yO1},
+ double kOdom[3][3] = {
+	  {fx,0,ox}, //Principal point needs to be offset if image is cropped
+	  {0,fy,oy},
 	  {0,0,1}};
 
  double kScale[3][3] = {
-		{959.791,0,696.0217 - xO2}, //Principal point needs to be offset if image is cropped
-		{0,956.9251,224.1806 - yO2},
+		{fx,0,ox - xO2}, //Principal point needs to be offset if image is cropped
+		{0,fy,oy - yO2},
 		{0,0,1}};
 
 	Mat K = Mat(3,3,CV_64F,kOdom);
 	Mat Kscale = Mat(3,3,CV_64F,kScale);
   double distCoeffs[5][1] = {-0.3691481, 0.1968681, 0.001353473, 0.0005677587, -0.06770705};
   Mat dist = Mat(5,1,CV_64F,distCoeffs);
+	Mat Pk_0 = cv::Mat::eye(cv::Size(4,3), CV_64F);
+	Mat Pk_1 = Kscale*Pk_0;
+	Mat Pk;
 
 // Ros time stamp
-ros::Time simTime, lastTime;
-double timeDiff;
 using namespace cv;
 using namespace std;
 static const std::string OPENCV_WINDOW = "Image Window";
@@ -138,16 +123,11 @@ static const std::string OPENCV_WINDOW = "Image Window";
 double xGT, yGT, zGT, xGT2, yGT2, scaleGT; //Ground truth parameters from node /tf
 double yawGT, yawDiffGT;
 double yawprevGT = -3.00251;
-
 double velocity;
 
 //Change parameters here:
 bool scaleRecoveryMode = true;
-int queueSize = 70;
-
-///vector <Point2f> source = {Point2f(570,235), Point2f(672,235), Point2f(421,375)};
-///vector <Point2f> dest = {Point2f(0,0), Point2f(400,0), Point2f(0,140)};
-///Mat affineMatrix = getAffineTransform(source, dest);
+int queueSize = 30;
 
 //Ground truth callback: Fetches values from node /tf
 void tfCb(const tf2_msgs::TFMessage::ConstPtr& tf_msg)
@@ -163,11 +143,10 @@ auto roty = tf_msg->transforms.at(0).transform.rotation.y;
 auto rotz = tf_msg->transforms.at(0).transform.rotation.z;
 auto q = tf_msg->transforms.at(0).transform.rotation;
 double yawGT = tf::getYaw(q);
-auto yawDiffGT = yawGT - yawprevGT;
-//Ground truth scale
+auto yawDiffGT = yawGT - yawprevGT;//cout << yawDiffGT << endl;//Ground truth scale
 scaleGT = sqrt(pow((xGT - xGT2),2)+pow((yGT - yGT2),2));
-//cout << "Scale GT: " << scaleGT << endl;
 
+//cout << "Scale GT: " << scaleGT << endl;
 //Prints ground truth to trajectory
 circle(trajectory, Point(yGT + dim/2,xGT + dim/2), 1, Scalar(124,252,0), 1);
 //Saves previous parameters of interest
@@ -175,7 +154,6 @@ yawprevGT = yawGT;
 xGT2 = xGT;
 yGT2 = yGT;
 }
-
 class ImageConverter
 {
 public:
@@ -183,10 +161,8 @@ public:
     : it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
-																//Replace this with your topic below//
-		image_sub_ = it_.subscribe("/kitti/camera_color_left/image_raw", queueSize, &ImageConverter::imageCb, this);
-		//image_sub_ = it_.subscribe("/kitti/camera_gray/right/image_rect", 50, &ImageConverter::imageCb, this);
-		//image_sub_ = it_.subscribe("/kitti/camera_gray/right/image_rect", 1, &ImageConverter::imageCb, this);
+															//Replace this with your topic below//
+		image_sub_ = it_.subscribe("/kitti/camera_gray_left/image_raw", queueSize, &ImageConverter::imageCb, this);
     cv::namedWindow(OPENCV_WINDOW);
   }
   ~ImageConverter()
@@ -196,10 +172,8 @@ public:
 	//Image callback, where the main algorithm is
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
-		simTime = ros::Time::now();
-		timeDiff = (simTime - lastTime).toSec(); //Simulation time difference, i.e. how long an iteration of the algorithm takes
-		//cout << "Time difference: " << timeDiff << endl;
     cv_bridge::CvImagePtr cv_ptr;
+		cv_bridge::CvImagePtr img_ptr;
     try
     {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -211,80 +185,111 @@ public:
     }
 	//-------------------------------------------------------------------------------------------
   //Algorithm starts here
-
   if (it == 1) //First frame to initialize
   {
-    oldIm = cv_ptr->image; //Receive image //undistort(oldIm0, oldIm, K, dist, Mat());
-		//Image is cropped if specified above
-		oldCrop = oldIm(cropOdom);
-		//Detect and descript features from the frame
-    orbOdom->detectAndCompute(oldCrop, noArray(), keyp1, desc1, false);
-		//Same with a subset of the frame is the scale recovery is wanted
+		//imp
+    oldIm = cv_ptr->image; //Receive image
+		//keyp1 = shiTomasiHelp(oldIm, 2000, 0.01, 10, 3, false, 0.04);
+		//orbOdom->compute(oldIm, keyp1, desc1);
+		orbOdom->detectAndCompute(oldIm, noArray(), keyp1, desc1, false);
+		//Same with a subset of the frame if the scale recovery is wanted
 		if(scaleRecoveryMode)
 		{
-		oldScaleIm = oldIm(cropScale);
-		orbScale->detectAndCompute(oldScaleIm, noArray(), keyp3, desc3, false);
+		oldImS = oldIm(cropScale);
+		//orbScale->detectAndCompute(oldImS, noArray(), keyp5, desc5, false);
+		keyp5 = shiTomasiHelp(oldImS, 1000, 0.05, 3, 3, false, 0.04);
+		orbScale->compute(oldImS, keyp5, desc5);
 	  }
   }
-    Im = cv_ptr->image;  //undistort(Im0, Im, K, dist, Mat());
-		crop = Im(cropOdom);
-		///Mat warp = Mat::zeros(140, 400, crop.type());
-		///warpAffine(crop, warp, affineMatrix, warp.size());
-		///imshow("Warped image", warp);
-    orbOdom->detectAndCompute(crop, noArray(), keyp2, desc2, false);
-
-		scaleIm = oldIm(cropScale);
+    Im = cv_ptr->image;
+		//keyp2 = shiTomasiHelp(Im, 2000, 0.01, 10, 3, false, 0.04);
+		//orbOdom->compute(Im, keyp2, desc2);
+		orbOdom->detectAndCompute(Im, noArray(), keyp2, desc2, false);
 		if(scaleRecoveryMode)
 		{
-		orbScale->detectAndCompute(scaleIm, noArray(), keyp4, desc4, false);
+		ImS = oldIm(cropScale);
+		//orbScale->detectAndCompute(ImS, noArray(), keyp6, desc6, false);
+		keyp6 = shiTomasiHelp(ImS, 1000, 0.05, 3, 3, false, 0.04);
+		orbScale->compute(ImS, keyp6, desc6);
 	  }
     if(keyp1.size() > 6 || keyp2.size() > 6) //Segmentation fault if detected features are lower than 5
     {
-    matchesOdom = BruteForce(oldCrop, crop, keyp1, keyp2, desc1, desc2, 0.78);
-		matches2 = BruteForce(oldScaleIm, scaleIm, keyp3, keyp4, desc3, desc4, 0.75);
-	  //cout << "Matches size: " << matches2.size() << endl;
+    matchesOdom = BruteForce(oldIm, Im, keyp1, keyp2, desc1, desc2, 0.75); //0.75
+		matches3 = BruteForce(oldImS, ImS, keyp5, keyp6, desc5, desc6, 0.75); //
 		//For triangulation, the matching 2D-correspondences from both frames are collected
 		tie(scene1, scene2) = getPixLoc(keyp1, keyp2, matchesOdom);
-		//Same for the smaller frame if we want to revocer scale as well
+		//Same for the smaller frame if we want to recover scale as well
 		if(scaleRecoveryMode)
 		{
-		tie(scene3, scene4) = getPixLoc(keyp3, keyp4, matches2);
+		tie(scene5, scene6) = getPixLoc(keyp5, keyp6, matches3);
  	  }
-
 		//Initial epipolar geometry between the 2 current frames
     tie(t,R) = getInitPose(keyp1, keyp2, matchesOdom, K);
-
 		Rodrigues(R, rotDiff, noArray());
-		Mat Xground;
-	  vector<Point2d> sift1;
-		vector<Point2d> sift2;
 
-		if(it == 500)
-		{
-			Mat P = projMat(Kscale, R, t);
-			cv::triangulatePoints(Kscale*Pk_1Hat, P, scene3, scene4, Xground);
-			//disp(Xground);
+			if(it > 2)
+			 //if(it == 10)
+			{
+				//cout << "Keyp5: " << keyp5.size() << " Keyp6: " << keyp6.size() << endl;
+				//cout << "It: " << it << endl;
+				Mat M = (Mat_<double>(3,4) << 1.0, 0.0, 0.0, 0.0,
+                              				0.0, 1.0, 0.0, 0.0,
+                              				0.0, 0.0, 1.0, 0.0);
+				Mat P1 = Kscale*M;
+				cv::vconcat(R,t.t(),M);
+				Mat P2 = Kscale*M.t();
+				Mat pnts3D(4, scene5.size(), CV_64F);
+				Mat vis(3, scene5.size(), CV_64F);
+			  //cout << "Scene size: " << scene5.size() << endl;
+				cv::triangulatePoints(P1, P2, scene5, scene6, pnts3D);
+				//Xground = dim4to3(pnts3D);
+				tie(Xground, sift1, sift2) = siftPoints(pnts3D, P2, scene5, scene6, 14, 5000, false);
+				//cout << "Size: " << sift1.size() << endl;
+				vector<Point3d> normalVec;
+				double n1,n2,n3,hprim;
+				generateHeights(Xground, 1.65, 10);
+				//cout << "Rot.diff: " << rotDiff*180/3.14159 << endl;
+				//cout << "Tran: " << t << endl;
+				cout << scaleGT << " ;" << endl;
+				double norm = sqrt(pow(xGT, 2) + pow(yGT, 2) + pow(zGT, 2));
+				cout << endl; /*
+			//tie(hprim,n1,n2,n3) = generateRand(Xground, 50000, sift1);
+			//normalVec.push_back({n1,n2,n3});
+			//nelderMead(normalVec, hprim, Kscale, sift1, sift2, t, R);
+			//cout << "Normal vector: " << n1 << "," << n2 << "," << n3 << endl;
+			//cout << "Estimated height: " << hprim << endl;
+			*/
+			Mat canvas = Mat::zeros(150, 290, CV_8UC3);
+			for(int i = 0; i < sift1.size(); i++)
+			{
+				std::string s = std::to_string(i);
+				putText(canvas,s,Point(sift1[i].x,sift1[i].y), cv::FONT_HERSHEY_DUPLEX,0.3,Scalar(0,0,255),1);
+				putText(canvas,s,Point(sift2[i].x,sift2[i].y), cv::FONT_HERSHEY_DUPLEX,0.3,Scalar(0,255,0),1);
+			}
+			cv::resize(canvas, canvas, cv::Size(), 3, 3);
+			imshow("Canvas", canvas);
 		}
-
 		//Where the scale recovery is obtained
-		if(scaleRecoveryMode && it > 2)
+		if(scaleRecoveryMode && it == 100)
 		{
-		//PkHat = scaleUpdate(Kscale, Rprev, R, tprev, t); //The scale
-		PkHat = scaleUpdate(Kscale, Rprev, Rprev*R, tprev, tprev + Rprev*t); //The scale
-		cv::triangulatePoints(Kscale*Pk_1Hat, PkHat, scene3, scene4, point3d);
-		curScale = getScale(point3d, scene4, PkHat, prevScale, alpha, camHeight);
-		prevScale = curScale;
-		cout << curScale << "," << scaleGT << ";" << endl;
+			Mat M = (Mat_<double>(3,4) << 1.0, 0.0, 0.0, 0.0,
+																		0.0, 1.0, 0.0, 0.0,
+																		0.0, 0.0, 1.0, 0.0);
+			Mat P1 = Kscale*M;
+		cout << "XXXXXXXXXXXXXXXXXXXXXXXXXX" << endl;
+		PkHat = scaleUpdate(Kscale, Rprev, R, tprev, t); //The scale
+		//PkHat = scaleUpdate(Kscale, Rprev, Rprev*R, tprev, tprev + Rprev*t); //The scale
+		cv::triangulatePoints(P1, PkHat, scene5, scene6, point3d);
+		curScale = getScale(point3d, scene5, PkHat, prevScale, alpha, camHeight);
+		//prevScale = curScale;
+		//cout << curScale << "," << scaleGT << ";" << endl;
 	  }
-		//velocity = curScale/correctTimeDivide(timeDiff, sampleTime); //Scale is the total displacement in meters, over the time of 100ms the velocity can be found
-		//cout << "Total velocity: " << velocity << " m/s" << endl; //Display total velocity
-		//cout << velocity << endl;
-		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1)//Safeguard, image is still if avgMatches is higher than a threshold
-		{
 		Rodrigues(Rpos, rot, noArray()); 			//Converts rotation matrix to rotation vector
 		Rodrigues(R, rotDiff, noArray());			//Same as above but with the
 		yawDiff = rotDiff.at<double>(1,0);
 		yaw = rot.at<double>(1,0); 						//Yaw for publishing odom message
+		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && abs(yawDiff*180/3.14159) < 30)
+		{
 		if(scaleRecoveryMode && it > 2)
 		{
 			tpos = tpos + Rpos*t*curScale; 			//The scaled estimate is updated here
@@ -294,34 +299,21 @@ public:
 		tpos = tpos + Rpos*t;					//The scaled estimate is updated here
 	  }
 		Rpos = R*Rpos;								//The rotation matrix updated after
-
 		}
 	}
-		//cout << "Rot diff: " << rotDiff.at<double>(1,0)*180/3.14159 << endl;
-		//cout << "t: " << t << endl;
-		//cout << "Rot: " << Rpos << endl;
-		//cout << endl;
-
 		if(it > 1)
 		{
     X = tpos.at<double>(0,0);
     Y = tpos.at<double>(0,2);
+		/*
 		x = tpos.at<double>(0,2);
 		y = tpos.at<double>(0,0);
 		vx = t.at<double>(0,2)*velocity;
 		vy = t.at<double>(0,0)*velocity;
-		yawVel = yawDiff/correctTimeDivide(timeDiff, sampleTime);
-
-		//cout << "Xpos: " << x << endl;
-		//cout << "Ypos: " << y << endl;
-		//cout << "xvec: " << vx << endl;
-		//cout << "yvec: " << vy << endl;
-		//cout << "Yaw: " << yaw*180/3.14159 << endl;
-		//cout << "Yaw difference: " << yawDiff*180/3.14159 << endl;
-		//cout << x << "," << y << "," << -yGT << "," << xGT << "," << curScale << "," << scaleGT << "," << yawDiff*180/3.14159 << ";" << endl;
+		*/
 	  }
 		//Quaternion created from yaw to publish in nav_msgs
-
+		/*
     geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(yaw);
 		//first, we'll publish the transform over tf
 		geometry_msgs::TransformStamped odom_trans;
@@ -335,7 +327,6 @@ public:
 
 		//We'll publish the odometry message over ROS
     odom.header.frame_id = "odom";
-		odom.header.stamp = simTime;
     //set the position
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
@@ -344,32 +335,29 @@ public:
 		odom.twist.twist.linear.x = vx;
 		odom.twist.twist.linear.y = vy;
 		odom.twist.twist.angular.z = yawVel;
-		//cout << "Yaw: " << yaw << endl;
     //Publish the odometry message
     odom_pub_.publish(odom);
-
+		*/
 		circle(trajectory, Point(X + dim/2,-Y + dim/2), 1, Scalar(0,0,255), 1);
     cv::resize(trajectory, traj, cv::Size(), showScale, showScale);
     imshow("Trajectory", traj);
 		//Copying previous parameters such as keypoints, descriptors etc
-		oldCrop = crop.clone();
   	oldIm = Im.clone();
     keyp1 = keyp2;
     desc1 = desc2.clone();
 		if(scaleRecoveryMode && it > 2)
 		{
-		oldScaleIm = scaleIm.clone();
+		oldImS = ImS.clone();
     keyp3 = keyp4;
     desc3 = desc4.clone();
+		keyp5 = keyp6;
+    desc5 = desc6.clone();
 	  }
 		//Saving the previous epipolar geometry, mainly for the scale recovery
 		Rprev = R.clone();
 		tprev = t.clone();
 
-
     it++; //Iteration number
-		//cout << "Frame number: " << it << endl;
-		lastTime = simTime;
     //------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
     // Update GUI Window

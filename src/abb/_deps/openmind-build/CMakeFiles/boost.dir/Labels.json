@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/CMakeFiles/boost"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/CMakeFiles/boost.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/CMakeFiles/boost-complete.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-build.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-configure.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-download.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-install.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-mkdir.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-patch.rule"
+		},
+		{
+			"file" : "/home/alesm512/ABB_New_Msc/src/abb/_deps/openmind-build/boost-prefix/src/boost-stamp/boost-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"boost"
+		],
+		"name" : "boost"
+	}
+}

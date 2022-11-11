@@ -1,0 +1,9 @@
+/home/alesm512/ABB_New_Msc/install/_setup_util.py
+/home/alesm512/ABB_New_Msc/install/env.sh
+/home/alesm512/ABB_New_Msc/install/setup.bash
+/home/alesm512/ABB_New_Msc/install/local_setup.bash
+/home/alesm512/ABB_New_Msc/install/setup.sh
+/home/alesm512/ABB_New_Msc/install/local_setup.sh
+/home/alesm512/ABB_New_Msc/install/setup.zsh
+/home/alesm512/ABB_New_Msc/install/local_setup.zsh
+/home/alesm512/ABB_New_Msc/install/.rosinstall
