@@ -4,8 +4,12 @@ using namespace std;
 //
 //Brute Force Matcher + displays matches
 //
-vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio) {
+vector<DMatch> BruteForce(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint> keyp2, Mat desc1, Mat desc2, double ratio, int hamm) {
 	Ptr<BFMatcher> matcher = BFMatcher::create(NORM_HAMMING2, false);
+	if(hamm == 1)
+	{
+		matcher = BFMatcher::create(NORM_HAMMING, false);
+	}
 	vector<vector<DMatch>> matches;
 	vector<DMatch> good_matches;
   if (keyp1.size() > 3 && keyp2.size() > 3) { //Minimum amount of features needed from both frames
@@ -78,7 +82,7 @@ for( size_t i = 0; i < matches.size(); i++)
 }
 
 //Estimating the epipolar geometry between the 2 frames with a RANSAC scheme
-Em = findEssentialMat(scene2, scene1, cam, RANSAC, 0.999, 1);
+Em = findEssentialMat(scene2, scene1, cam, RANSAC, 0.99, 1);
 recoverPose(Em, scene2, scene1, cam, Rm, t, noArray());
 }
 return {t,Rm};
@@ -194,40 +198,20 @@ double getScale(Mat point3d,vector<Point2d> scene, Mat PkHat, double prevScale, 
 int size;
 double outlierFactor = 2; //Factor to remove outliers from the median value with repr. error lower than maxError
 vector<double> Yval, YvalFiltered;
-Mat E; //Reprojection error vector
-double maxError = 1000; //Max repr. error
-double X,Y,Z,W, x,y, median, avgY, newScale, e, distance;
-	for(int i = 0; i<point3d.cols; i++){
+double X,Y,Z,W, x,y, median, avgY, newScale;
+	for(int i = 0; i<point3d.cols; i++)
+	{
 		//Obtain Triangulated 3D-points and their 2D correspondence from last frame
 		W = point3d.at<double>(3,i);
-		X = point3d.at<double>(0,i)/W;
 		Y = point3d.at<double>(1,i)/W;
-		Z = point3d.at<double>(2,i)/W;
-		x = scene[i].x;
-		y = scene[i].y;
-		double Xj[4][1] = {X, Y, Z, 1};
-		double xj[3][1] = {x, y, 1};
-		Mat XJ = Mat(4,1,CV_64F,Xj);
-		Mat xJ = Mat(3,1,CV_64F,xj);
-
-		//Calculate repr. error
-		E = xJ - PkHat*XJ;
-		e = sqrt(E.at<double>(0,0)*E.at<double>(0,0) + E.at<double>(0,1)*E.at<double>(0,1) + E.at<double>(0,2)*E.at<double>(0,2));
-		//Some values of Y are close to 1 which are erroneous, therefore removed in condition below (if abs(Y-1) > 0.001)
-		if(e < maxError && abs(Y-1) > 0.1 && 1.65/Y > 0.1 && 1.65/Y < 4) //&& height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor
-		//if(e < maxError && abs(Y-1) > 0.1 && Y > 0) //&& height/Y < outlierFactor*prevScale && height/Y > prevScale/outlierFactor
-		{
-			//cout << "Reprojection error: " << e << endl;
-			cout << "Ok: " << 1.65/Y << endl;
-			//cout << pix << endl;
-			//cout << endl;
-			Yval.push_back(Y);
-		}
-		}
+		cout << "Ok: " << 1.65/Y << endl;
+		Yval.push_back(Y);
+	}
 size = Yval.size();
 cout << "Size: " << size << endl;
 sort(Yval.begin(), Yval.end());
-for(int i = 0; i < size; i++){
+for(int i = 0; i < size; i++)
+{
 //cout << 1.65/Yval[i] << endl;
 }
 if(size > 2)
@@ -286,54 +270,62 @@ else
 	}
 }
 
-// Converts a rotation vector to rotation matrix
-Mat eulerAnglesToRotationMatrix(Mat rot)
+//knop
+	tuple<vector<size_t>, vector<double>> inlierLikelihood(vector<double> yVal, double maxLH)
 	{
-	    // Calculate rotation about x axis
-	    Mat R_x = (Mat_<double>(3,3) <<
-	               1,       0,              0,
-	               0,       cos(rot.at<int>(0,0)),   -sin(rot.at<int>(0,0)),
-	               0,       sin(rot.at<int>(0,0)),   cos(rot.at<int>(0,0))
-	               );
-	    // Calculate rotation about y axis
-	    Mat R_y = (Mat_<double>(3,3) <<
-	               cos(rot.at<int>(0,1)),    0,      sin(rot.at<int>(0,1)),
-	               0,               1,      0,
-	               -sin(rot.at<int>(0,1)),   0,      cos(rot.at<int>(0,1))
-	               );
-	    // Calculate rotation about z axis
-	    Mat R_z = (Mat_<double>(3,3) <<
-	               cos(rot.at<int>(0,2)),    -sin(rot.at<int>(0,2)),      0,
-	               sin(rot.at<int>(0,2)),    cos(rot.at<int>(0,2)),       0,
-	               0,               0,                  1);
-	    Mat R = R_z * R_y * R_x;
-	    return R;
-	}
-
-	vector<size_t> inlierLikelihood(vector<double> yVal, double maxSigma)
-	{
+		double bic1, bic2, bic3;
+		//double aic1, aic2, aic3;
+		bool status, status2, status3;
+		int order = 1;
+		double pi = 3.14159;
+		double minScore = 10000;
 		double mu = avg(yVal);
 		double var = variance(yVal, mu);
 		double sigma = sqrt(var);
-		int o = 1;
-		/*
-		cout << "Overall average: " << mu << endl;
-		cout << "Overall variance: " << var << endl;
-		cout << "Overall standard deviation: " << sigma << endl;
-		*/
-		if(sigma > maxSigma)
-		{
+		int N = yVal.size();
+ 		arma::gmm_diag model;
 		arma::mat data(1, yVal.size(), arma::fill::zeros);
+
 		for(int i = 0; i < yVal.size(); i++)
 		{
 			data(0,i) = yVal[i];
+			//cout << yVal[i] << ";" << endl;
 		}
-		arma::gmm_diag model;
-		bool status3 = model.learn(data, 3, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
-		if(status3 == false)
-  	{
-  		cout << "learning failed" << endl;
-  	}
+		//cout << "Size: " << yVal.size() << endl;
+		if(yVal.size() > 4)
+		{
+			status = model.learn(data, 1, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
+			if(status)
+			{
+				//aic1 = 2 - 2*model.sum_log_p(data);
+				bic1 = log(N) - 2*model.sum_log_p(data);
+				if(bic1 < minScore)
+				{
+					minScore = bic1;
+				}
+			}
+		status2 = model.learn(data, 2, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
+		if(status2)
+		{
+			double mean0 = model.means(0);
+			double mean1 = model.means(1);
+			vector<double> means;
+			means.push_back(mean0);
+			means.push_back(mean1);
+			auto it = minmax_element(begin(means), end(means));
+			int min_idx = std::distance(means.begin(), it.first);
+			//aic2 = 4 - 2*model.sum_log_p(data);
+			bic2 = 2*log(N) - 2*model.sum_log_p(data);
+			if(bic2 < minScore)
+			{
+				minScore = bic2;
+				order = 2;
+				//cout << "Changing model to 2" << endl;
+				//mu = model.means[min_idx];
+				//sigma = sqrt(model.dcovs[min_idx]);
+			}
+		}
+		status3 = model.learn(data, 3, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
 		if(status3)
 		{
 			double mean0 = model.means(0);
@@ -349,111 +341,88 @@ Mat eulerAnglesToRotationMatrix(Mat rot)
 			mean0 = means[0];
 			mean1 = means[1];
 			mean2 = means[2];
-			/*
-			cout << "New mean: " << model.means[min_idx] << endl;
-			cout << "New stdev: " << sqrt(model.dcovs[min_idx]) << endl;
-			cout << "Weight: " << model.hefts[min_idx] << endl;
-			*/
+			//aic3 = 6 - 2*model.sum_log_p(data);
+			bic3 = 3*log(N) - 2*model.sum_log_p(data);
+			if(bic3 < minScore)
+			{
+			order = 3;
+			//cout << "Changing model to 3" << endl;
 			//mu = model.means[min_idx];
 			//sigma = sqrt(model.dcovs[min_idx]);
-			if(abs(mean0 - mean1) <= abs(mean1 - mean2))
-			if(o)
-			{
-				bool status2 = model.learn(data, 2, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
-				if(status2)
-				{
-					means.clear();
-					double mean0 = model.means(0);
-					double mean1 = model.means(1);
-					means.push_back(mean0);
-					means.push_back(mean1);
-					auto it = minmax_element(begin(means), end(means));
-					int min_idx = std::distance(means.begin(), it.first);
-					/*
-					//imp
-					cout << endl;
-					cout << "New mean: " << model.means[min_idx] << endl;
-					cout << "New stdev: " << sqrt(model.dcovs[min_idx]) << endl;
-					cout << "Weight: " << model.hefts[min_idx] << endl;
-					cout << endl;
-					*/
-					//mu = model.means[min_idx];
-					//sigma = sqrt(model.dcovs[min_idx]);
-				}
+		  }
 			}
+			cout << "Bic: " << bic1 << " " << bic2 << " " << bic3 << endl;
+			//cout << "Aic: " << aic1 << " " << aic2 << " " << aic3 << endl;
+			//cout << "Order: " << order << endl;
+			//cout << endl;
+			}
+
+	double z1 = -0.67;
+	double z3 =  -z1;
+	double Q1 = sigma*z1 + mu;
+	double Q3 = sigma*z3 + mu;
+	//cout << "Mean: " << mu << " Q1: " << Q1 << " Q3: " << Q3 << endl;
+	//cout << "Points size: " << N << endl;
+	double lh;
+	vector<size_t> index;
+	vector<double> lhoods;
+	for(int i = 0; i < yVal.size(); i++)
+	{
+		lh = 1/(sqrt(2*pi)*sigma)*exp(-pow((yVal[i] - mu)/sigma, 2)/2);
+		lhoods.push_back(lh);
+		if(yVal[i] > Q1 && yVal[i] < Q3)
+		{
+			index.push_back(i);
 		}
 	}
-	double lh;
+
+	stable_sort(index.begin(), index.end(), [&lhoods](size_t i1, size_t i2) {return lhoods[i1] > lhoods[i2];});
+
 	vector<double> likelihoods;
-	double pi = 3.14159;
 	for(int i = 0; i < yVal.size(); i++)
 	{
 		lh = 1/(sqrt(2*pi)*sigma)*exp(-pow((yVal[i] - mu)/sigma, 2)/2);
 		likelihoods.push_back(lh);
-		//cout << "Y: " << yVal[i] << " mu: " << lh << endl;
 	}
 
 	vector<size_t> idx(yVal.size());
 	iota(idx.begin(), idx.end(), 0);
 	stable_sort(idx.begin(), idx.end(), [&likelihoods](size_t i1, size_t i2) {return likelihoods[i1] > likelihoods[i2];});
-	return idx;
+	return {index, likelihoods};
 }
 // Sifts out abnormaly large triangulated 3D-points and their 2D-point correspondences
-tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>> siftPoints(Mat X3D, Mat proj, vector<Point2d> scene1, vector<Point2d> scene2, int maxPoints, int maxError, bool show)
+tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>> siftPoints(vector<Point3d> X3D, Mat proj, vector<Point2d> scene1, vector<Point2d> scene2, int maxPoints, bool show)
 {
-vector<double> yVal, erep;
-vector<Point2d> sift1, sift2, sort1, sort2;
-vector<Point3d> coords, coordsSifted;
-double Xs,Ys,Zs, e;
-int j = 0;
-Mat Em;
-Mat Xk = cv::Mat::ones(cv::Size(1,4), CV_64F);
-Mat xk = cv::Mat::ones(cv::Size(1,3), CV_64F);
-for(int i = 0; i < X3D.cols; i++)
+vector<double> yVal;
+vector<Point2d> sort1, sort2;
+vector<Point3d> coordsSifted;
+double Ys;
+for(int i = 0; i < X3D.size(); i++)
 {
-		Xs = X3D.at<double>(0,i)/X3D.at<double>(3,i);
-		Ys = X3D.at<double>(1,i)/X3D.at<double>(3,i);
-		Zs = X3D.at<double>(2,i)/X3D.at<double>(3,i);
-		Xk.at<double>(0,0) = Xs;
-		Xk.at<double>(0,1) = Ys;
-		Xk.at<double>(0,2) = Zs;
-		// Form the current Image-point from input with index i
-		xk.at<double>(0,0) = scene2[i].x;
-		xk.at<double>(0,1) = scene2[i].y;
-		Em = xk - proj*Xk;
-		e = sqrt(pow(Em.at<double>(0,0), 2) + pow(Em.at<double>(0,1), 2) + pow(Em.at<double>(0,2), 2));
-		if(e < maxError)// 3D-points can't be behind the camera
-		{
-		if(show)
-		{
-			//cout << e << endl;
-			//cout << scene1[i] << scene2[i] << endl;
-			//cout << Xs << "," << Ys << "," << Zs << ";" << endl;
-		}
-		coords.push_back({Xs,Ys,Zs});
-		sift1.push_back(scene1[i]);
-		sift2.push_back(scene2[i]);
+		Ys = X3D[i].y;
 		yVal.push_back(Ys);
-		erep.push_back(e);
-	  }
+		//imp
+		//cout << X3D[i].x << ", " << X3D[i].y << ", " << X3D[i].z << ";" << endl;
 }
-vector<size_t> index = inlierLikelihood(yVal, 0.15);
-//imp
-/*
+vector<size_t> index;
+vector<double> likelihoods;
+tie(index,likelihoods) = inlierLikelihood(yVal, 0.8);
+//
+//// Viz: Displays 3D-points, for frame analysis
+//
+int dispViz = 0;
+if(dispViz)
+{
 viz::Viz3d window("3D-coords");
 window.showWidget("coordinate", viz::WCoordinateSystem());
-window.showWidget("points", viz::WCloud(coords, viz::Color::green()));
+window.showWidget("points", viz::WCloud(X3D, viz::Color::green()));
 window.spin();
-*/
+}
 
-//vector<size_t> index(yVal.size());
-//iota(index.begin(), index.end(), 0);
-//stable_sort(index.begin(), index.end(), [&erep](size_t i1, size_t i2) {return erep[i1] < erep[i2];});
-
-//cout << "The sifted and sorted based on repr error" << endl;
-
-if(maxPoints > index.size()){ maxPoints = index.size(); }
-
+if(maxPoints > index.size())
+{
+	maxPoints = index.size();
+}
 for(int n = 0; n < maxPoints; n++)
 {
 	if(n == yVal.size())
@@ -461,56 +430,86 @@ for(int n = 0; n < maxPoints; n++)
 		break;
 	}
 	//imp
-	//cout << coords[index[n]] << endl;
-	sort1.push_back(sift1[index[n]]);
-	sort2.push_back(sift2[index[n]]);
-	coordsSifted.push_back(coords[index[n]]);
-	/*
-	cout << coords[n] << endl;
-	sort1.push_back(sift1[n]);
-	sort2.push_back(sift2[n]);
-	coordsSifted.push_back(coords[n]);
-	if(show)
-	*/
+	sort1.push_back(scene1[index[n]]);
+	sort2.push_back(scene2[index[n]]);
+	coordsSifted.push_back(X3D[index[n]]);
+	cout << X3D[index[n]].y << endl;
 	{
-		//cout << eRepr[idx[n]] << endl;
-		//cout << coords[idx[n]] << endl;
 	}
 }
 
 return{coordsSifted, sort1, sort2};
 }
-// Returns the index of the triangulated 3D-point with the lowest reprojection error
-// Not currently used in the algorithm
-int poseRefiner(Mat cam, Mat proj, vector<Point3d> Xtriang, vector<Point2d> scene1, vector<Point2d> scene2)
-{
-// Repr.error = |xk - Xk*P|
-Mat Xk = cv::Mat::ones(cv::Size(1,4), CV_64F); //
-Mat xk = cv::Mat::ones(cv::Size(1,3), CV_64F);
-Mat Er; // Reprojection error matrix xk - Xk*P
-double e; // Resulting reprojection error
-double min = 1000000; // Start with relative high value to compare repr.errors with
-int index;
-for (size_t i = 0; i < Xtriang.size(); i++)
-{
-// Form the current 3D-point from input with index i
-Xk.at<double>(0,0) = Xtriang[i].x;
-Xk.at<double>(0,1) = Xtriang[i].y;
-Xk.at<double>(0,2) = Xtriang[i].z;
-// Form the current Image-point from input with index i
-xk.at<double>(0,0) = scene2[i].x;
-xk.at<double>(0,1) = scene2[i].y;
 
-Er = xk - proj*Xk;
-e = sqrt(Er.at<double>(0,0)*Er.at<double>(0,0) + Er.at<double>(0,1)*Er.at<double>(0,1) + Er.at<double>(0,2)*Er.at<double>(0,2));
-
-if (e < min)
+tuple<Mat, Mat>projMatrices(Mat cam, Mat Rota, Mat tran)
 {
-	min = e;
-	index = i;
+	Mat M = (Mat_<double>(3,4) << 1.0, 0.0, 0.0, 0.0,
+																0.0, 1.0, 0.0, 0.0,
+																0.0, 0.0, 1.0, 0.0);
+	Mat proj1 = cam*M;
+	cv::vconcat(Rota,tran.t(),M);
+	Mat proj2 = cam*M.t();
+	return{proj1, proj2};
 }
+
+tuple<vector<Point3d>,vector<Point2d>,vector<Point2d>> siftError(Mat proj, vector<Point3d> Xtriang, vector<Point2d> scene1, vector<Point2d> scene2, int maxError)
+{
+	vector<Point3d> siftX;
+	vector<Point2d> sift1, sift2;
+	Mat Xk = cv::Mat::ones(cv::Size(1,4), CV_64F); //
+	Mat xk = cv::Mat::ones(cv::Size(1,3), CV_64F);
+	Mat Er; // Reprojection error matrix xk - Xk*P
+	double e; // Resulting reprojection error
+	for (size_t i = 0; i < Xtriang.size(); i++)
+	{
+	Xk.at<double>(0,0) = Xtriang[i].x;
+	Xk.at<double>(0,1) = Xtriang[i].y;
+	Xk.at<double>(0,2) = Xtriang[i].z;
+	xk.at<double>(0,0) = scene2[i].x;
+	xk.at<double>(0,1) = scene2[i].y;
+
+	Er = xk - proj*Xk;
+	e = sqrt(Er.at<double>(0,0)*Er.at<double>(0,0) + Er.at<double>(0,1)*Er.at<double>(0,1) + Er.at<double>(0,2)*Er.at<double>(0,2));
+
+	if (e < maxError)
+	{
+		sift1.push_back(scene1[i]);
+		sift2.push_back(scene2[i]);
+		siftX.push_back(Xtriang[i]);
+	}
 }
-return index;
+	//cout << "New size: " << sift1.size() << endl;
+	return{siftX, sift1, sift2};
+}
+
+tuple<vector<Point3d>,vector<Point2d>,vector<Point2d>> siftSelect(Mat proj, vector<Point3d> Xtriang, vector<Point2d> scene1, vector<Point2d> scene2, int maxError)
+{
+	vector<Point3d> siftX;
+	vector<Point2d> sift1, sift2;
+	Mat Xk = cv::Mat::ones(cv::Size(1,4), CV_64F); //
+	Mat xk = cv::Mat::ones(cv::Size(1,3), CV_64F);
+	Mat Er; // Reprojection error matrix xk - Xk*P
+	double e; // Resulting reprojection error
+	for (size_t i = 0; i < Xtriang.size(); i++)
+	{
+	Xk.at<double>(0,0) = Xtriang[i].x;
+	Xk.at<double>(0,1) = Xtriang[i].y;
+	Xk.at<double>(0,2) = Xtriang[i].z;
+	xk.at<double>(0,0) = scene2[i].x;
+	xk.at<double>(0,1) = scene2[i].y;
+
+	Er = xk - proj*Xk;
+	e = sqrt(Er.at<double>(0,0)*Er.at<double>(0,0) + Er.at<double>(0,1)*Er.at<double>(0,1) + Er.at<double>(0,2)*Er.at<double>(0,2));
+
+	if (e < maxError)
+	{
+		sift1.push_back(scene1[i]);
+		sift2.push_back(scene2[i]);
+		siftX.push_back(Xtriang[i]);
+	}
+}
+	//cout << "New size: " << sift1.size() << endl;
+	return{siftX, sift1, sift2};
 }
 
 void disp(Mat Xg)
@@ -584,7 +583,7 @@ void medianAvg(vector <double> heights)
 	}
 	average = avg(newH);
 	//cout << "Median: " << median << endl;
-	cout << 1.65/average << ", " ;
+	cout << "Median avg: " << 1.65/average << endl;
 }
 
 tuple <double, int> qScore(vector <double> heights)
@@ -615,12 +614,63 @@ if(diffSum > max)
 	//cout << "With score: " << diffSum << endl;
 }
 }
-cout << 1.65/heights[index] << ", " ;
+//cout << "Best estimate: " << 1.65/heights[index] << endl;
 return {heights[index], index};
 }
 
-tuple <double, double, double, double> generateHeights(vector<Point3d> X, double realH, double maxScale)
+tuple <Mat, Mat> EKF(double x, double y, double vel, double yaw, double omega, double dt, Mat Pkk, Mat Qk, Mat Rk)
 {
+	double xk, xkk, yk, ykk, velk, velkk, yawk, yawkk, omegak, omegakk;
+	Mat Fk = (Mat_<double>(5,5) <<  1, 0, dt*cos(yaw), 	-vel*dt*sin(yaw)*omega, 		0,
+																 	1, 0, dt*sin(yaw), 	-vel*dt*sin(yaw)*omega, 		0,
+																 	0, 0, 1, 					  0, 													0,
+																 	0, 0, 0,            1, 													0,
+																 	0, 0, 0,            1, 													1);
+  Mat Gk = (Mat_<double>(5,2) <<  dt*cos(yaw), 0,
+																  dt*sin(yaw), 0,
+																  1, 					 0,
+																  0, 				   0,
+																  0, 					 1);
+  Mat Hk = (Mat_<double>(3,5) <<  1, 0, 0, 0, 0,
+ 																  0, 1, 0, 0, 0,
+																  0, 0, 0, 1, 0);
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+	std::normal_distribution<double> distvel(0.0,Qk.at<double>(0,0));
+	std::normal_distribution<double> distyawvel(0.0,Qk.at<double>(1,1));
+	xk = x + vel*dt*cos(yaw);
+	yk = y + vel*dt*sin(yaw);
+	velk = vel + distvel(generator);
+	yawk = yaw + dt*omega;
+	omegak = omega + distyawvel(generator);
+	//
+	//Predict
+	//
+	Mat Xk = (Mat_<double>(5,1) << xk, yk, velk, yawk, omegak); //Predicted state estimate
+	Pkk = Fk*Pkk*Fk.t() + Gk*Qk*Gk.t(); //Predicted covariance estimate
+	//
+	//Update
+	//
+	Mat eye5x5 = cv::Mat::eye(5,5,CV_64F);
+	double zx, zy, zyaw;
+	std::normal_distribution<double> errx(0.0,Rk.at<double>(0,0));
+	std::normal_distribution<double> erry(0.0,Rk.at<double>(1,1));
+	std::normal_distribution<double> erryaw(0.0,Rk.at<double>(2,2));
+	zx = x + errx(generator);
+	zy = y + erry(generator);
+	zyaw = yaw + erryaw(generator);
+
+	Mat yHilde = (Mat_<double>(3,1) <<  zx - xk, zy - yk, zyaw - yawk);
+	Mat Sk = Hk*Pkk*Hk.t() + Rk; //Innovation (or residual) covariance
+	Mat Kk = Pkk*Hk.t()*Sk.inv(); //Kalman gain
+	Mat Xup = Xk + Kk*yHilde; //Updated state estimate
+	Pkk = (eye5x5 - Kk*Hk)*Pkk; //Updated covariance estimate
+	return {Xup, Pkk};
+}
+
+tuple <double, Mat, vector<double>> generateHeights(vector<Point3d> X, double realH, double maxScale, int maxIter)
+{
+Mat normVec = (Mat_<double>(1,3) << 0,1,0);
 vector<Point3d> normal;
 Mat point, N, N_norm;
 Mat n = cv::Mat::zeros(3,3,CV_64F);
@@ -628,17 +678,24 @@ Mat l = cv::Mat::ones(3,1,CV_64F);
 double norm, height, n1, n2, n3;
 vector<double> heights;
 vector <vector <int>> bin;
+
 bin = combList(X.size(), 3); //Combination list of sizeof(X) choose 3 numbers
+std::vector<int> myvector;
+for(int i = 0; i < bin.size(); ++i){myvector.push_back(i);}
+std::random_shuffle(myvector.begin(),myvector.end());
+
+if(maxIter > bin.size()){maxIter = bin.size();}
+
 if(X.size() > 2)
 {
 int u = 0;
-for(int i = 0; i < bin.size(); i++)
+for(int i = 0; i < maxIter; i++)
 {
 for(int j = 0; j < 3; j++)
 {
-	n.at<double>(j,0) = X[bin[i][j]].x;
-	n.at<double>(j,1) = X[bin[i][j]].y;
-	n.at<double>(j,2) = X[bin[i][j]].z;
+	n.at<double>(j,0) = X[bin[myvector[i]][j]].x;
+	n.at<double>(j,1) = X[bin[myvector[i]][j]].y;
+	n.at<double>(j,2) = X[bin[myvector[i]][j]].z;
 }
 N = n.inv()*l;
 norm = sqrt(pow(N.at<double>(0,0), 2) + pow(N.at<double>(1,0), 2) + pow(N.at<double>(2,0), 2));
@@ -648,21 +705,12 @@ n1 = N_norm.at<double>(0,0);
 n2 = N_norm.at<double>(1,0);
 n3 = N_norm.at<double>(2,0);
 //imp
-//if(height < 2 && height > 1.6)// && n1 > 0 && n3 > 0)
 if(n2 < -0.95)
-//if(n1*X[list[0]].x + n3*X[list[0]].z > 0 && n2 < -0.99)
 {
 normal.push_back({n1,n2,n3});
 heights.push_back(height);
-
-//cout << bin[i][0] << " " << bin[i][1] << " " << bin[i][2] << endl;
+//cout << 1.65/height << ";" << endl;
 u++;
-/*
-cout << "It: " << u << endl;
-cout << "Height est: " << height << endl;
-cout << "Normal vector: " << N_norm << endl;
-cout << endl;
-*/
 }
 }
 }
@@ -672,19 +720,54 @@ double average = avg(heights);
 int index;
 double h;
 tie(h,index) = qScore(heights);
+n1 = normal[index].x;
+n2 = normal[index].y;
+n3 = normal[index].z;
+Mat normVec = (Mat_<double>(1,3) << n1,n2,n3);
 //cout << "Best normal estimate: " << normal[index] << endl;
-sort(heights.begin(), heights.end());
-for(int k = 0; k < heights.size(); k++)
-{
-	//cout << heights[k] << endl;
-}
 //cout << "Size: " << heights.size() << endl;
 //cout << heights[index] << endl;
-medianAvg(heights);
+//medianAvg(heights);
 //cout << "Average: " << average << endl;
+return {h, normVec, heights};
 }
-return {1,1,1,1};
+return {0.1, normVec, heights};
 }
+
+void testHomog(vector<double> hestimates, vector<Point2d> scene2, Mat cam, vector<Point3d> Xground)
+{
+	Mat Hom, Xprim, Err;
+	double sad, hcur, e, hmin;
+	double minerror = 100000000000;
+	Mat Xk = cv::Mat::ones(cv::Size(1,3), CV_64F);
+	Mat xk = cv::Mat::ones(cv::Size(1,3), CV_64F);
+	for(int i = 0; i < hestimates.size(); i++)
+	{
+		hcur = hestimates[i];
+		Hom = (Mat_<double>(3,3) << 1, 0, 0,
+																0, 0, -hcur,
+																0, 1, 0);
+		sad = 0;
+		e = 0;
+		for(int k = 0; k < Xground.size(); k++)
+		{
+			Xk.at<double>(0,0) = Xground[k].x;
+			Xk.at<double>(0,1) = Xground[k].z;
+			xk.at<double>(0,0) = scene2[k].x;
+			xk.at<double>(0,1) = scene2[k].y;
+			Err = xk - cam*Hom*Xk;
+			e = sqrt(pow(Err.at<double>(0,0),2) + pow(Err.at<double>(0,1),2) + pow(Err.at<double>(0,1),2));
+			sad = sad + e;
+		}
+		if(e < minerror)
+		{
+			hmin = hcur;
+		}
+	}
+	cout << "Best estimate: " << 1.65/hmin << endl;
+}
+
+
 
 void orbDraw(Mat img)
 {
@@ -767,14 +850,14 @@ void PermGenerator(int n, int k)
     } while (next_permutation(d.begin(),d.end()));
 }
 
-void nelderMead(vector<Point3d> normalVec, double h, Mat cam, vector<Point2d> scene1,vector<Point2d> scene2, Mat t, Mat rota)
+void nelderMead(Point3d normalVec, double h, Mat cam, vector<Point2d> scene1,vector<Point2d> scene2, Mat t, Mat rota)
 {
 	double n,n1,n2,n3,norm;
 	Mat H;
-	double nDiff = 0.4;
-	double hDiff = 2;
-	int iter = 20;
-	double p = 1.5;
+	double nDiff = 0.2;
+	double hDiff = 0.4;
+	int iter = 100;
+	double p = 2.5;
 	double SAD;
 	double min = 100000;
 	double hbest;
@@ -782,13 +865,12 @@ void nelderMead(vector<Point3d> normalVec, double h, Mat cam, vector<Point2d> sc
 	Mat x2 = cv::Mat::ones(cv::Size(1,3), CV_64F);
 	Mat err = cv::Mat::ones(cv::Size(1,3), CV_64F);
 	Mat N = cv::Mat::zeros(cv::Size(3,1), CV_64F);
-	n1 = normalVec[0].x;
-	n2 = normalVec[0].y;
-	n3 = normalVec[0].z;
+	n1 = normalVec.x;
+	n2 = normalVec.y;
+	n3 = normalVec.z;
 	N.at<double>(0,0) = n1;
 	N.at<double>(0,1) = n2;
 	N.at<double>(0,2) = n3;
-
 	h = h - hDiff/2;
 	for(int i = 0; i < iter; i++)
 	{
@@ -799,6 +881,8 @@ void nelderMead(vector<Point3d> normalVec, double h, Mat cam, vector<Point2d> sc
 		{
 			n = n + nDiff/iter;
 			N.at<double>(0,2) = n;
+			norm = sqrt(pow(n1,2)+pow(n2,2)+pow(n,2));
+			N = N/norm;
 			H = cam*(rota + t*N/h)*cam.inv();
 			SAD = 0;
 			for(int k = 0; k < scene1.size(); k++)
@@ -808,19 +892,122 @@ void nelderMead(vector<Point3d> normalVec, double h, Mat cam, vector<Point2d> sc
 				x2.at<double>(0,0) = scene2[k].x;
 				x2.at<double>(1,0) = scene2[k].y;
 				err = x2 - H*x1;
-				auto e = sqrt(pow(err.at<double>(0,0),2) + pow(err.at<double>(0,1),2) + pow(err.at<double>(0,1),2));
+				auto e = sqrt(pow(err.at<double>(0,0),2) + pow(err.at<double>(0,1),2) + pow(err.at<double>(0,2),2));
 				SAD = SAD + e;
 			}
 			if(SAD < min)
 			{
 				hbest = h;
 				min = SAD;
-				auto norm = sqrt(pow(n1,2)+pow(n2,2)+pow(n,2));
-				cout << "New best estimate: " << hbest << " i: " << i << " j: " << j << " Norm: " << norm << " SAD: " << SAD << endl;
+				cout << "New best estimate: " << hbest << " i: " << i << " j: " << j << " SAD: " << SAD << endl;
+			}
+		}
+	}
+	cout << "New best estimate: " << 1.65/hbest << endl;
+}
+
+void nelder(Mat normalVec, double h, Mat cam, vector<Point2d> scene1,vector<Point2d> scene2, Mat t, Mat rota)
+{
+	double n,n1,n2,n3,norm, theta, phi, htemp, m1, m2, m3;
+	Mat H;
+	double pi = 3.14159265359;
+	double phDiff = 10;
+	double thDiff = 10;
+	double hDiff = 2;
+	int iterh = 10;
+	int iterth = 50;
+	int iterphi = 50;
+	double p = 25;
+	double SAD;
+	double min = 100000;
+	double hbest;
+	Mat x1 = cv::Mat::ones(cv::Size(1,3), CV_64F);
+	Mat x2 = cv::Mat::ones(cv::Size(1,3), CV_64F);
+	Mat err = cv::Mat::ones(cv::Size(1,3), CV_64F);
+	Mat N = cv::Mat::zeros(cv::Size(3,1), CV_64F);
+	n1 = normalVec.at<double>(0,0);
+	n2 = normalVec.at<double>(1,0);
+	n3 = normalVec.at<double>(2,0);
+	theta = acos(n3);
+	phi = atan(n2/n1);
+
+	theta = acos(n3) - thDiff*pi/360;
+	for(int i = 0; i < iterth; i++)
+	{
+		theta = theta + thDiff*pi/360/iterth;
+		phi = atan(n2/n1) - phDiff*pi/360;
+		for(int j = 0; j < iterphi; j++)
+		{
+			phi = phi + phDiff*pi/360/iterphi;
+
+			htemp = h - hDiff/2;
+			for(int k = 0; k < iterh; k++)
+			{
+				htemp = htemp + hDiff/iterh;
+				m1 = sin(theta)*cos(phi);
+				m2 = sin(theta)*sin(phi);
+				m3 = cos(theta);
+				N.at<double>(0,0) = m1;
+				N.at<double>(0,1) = m2;
+				N.at<double>(0,2) = m3;
+				H = cam*(rota + t*N/htemp)*cam.inv();
+				SAD = 0;
+				for(int v = 0; v < scene1.size(); v++)
+				{
+					x1.at<double>(0,0) = scene1[v].x;
+					x1.at<double>(1,0) = scene1[v].y;
+					x2.at<double>(0,0) = scene2[v].x;
+					x2.at<double>(1,0) = scene2[v].y;
+					err = x2 - H*x1;
+					auto e = sqrt(pow(err.at<double>(0,0),2) + pow(err.at<double>(0,1),2) + pow(err.at<double>(0,1),2));
+					SAD = SAD + e;
+				}
+				if(SAD < min)
+				{
+					hbest = htemp;
+					min = SAD;
+					//cout << k << endl;
+					//cout << "New best estimate: " << hbest << " SAD: " << SAD << endl;
+					cout << "New best estimate: " << hbest << " i: " << i << " j: " << j << " SAD: " << SAD << endl;
+				}
 			}
 		}
 	}
 }
+
+
+void spherical(Point3d normvec)
+{
+double nx, ny, nz, theta, phi, phi2;
+cout << normvec << endl;
+nx = normvec.x;
+ny = normvec.y;
+nz = normvec.z;
+double pi = 3.14159265359;
+theta = acos(nz);
+phi = atan(ny/nx);
+
+cout << sin(theta)*cos(phi) << " " << sin(theta)*sin(phi) << " " << cos(theta) << endl;
+}
+
+
+Mat rot2Quat(Mat rotvec)
+{
+	double pitch,roll,yaw,q0,q1,q2,q3;
+	pitch = rotvec.at<double>(0,0);
+	roll = rotvec.at<double>(0,1);
+	yaw = rotvec.at<double>(0,2);
+
+	q0 = cos(pitch/2)*cos(roll/2)*cos(yaw/2) + sin(pitch/2)*sin(roll/2)*sin(yaw/2);
+	q1 = sin(pitch/2)*cos(roll/2)*cos(yaw/2) - cos(pitch/2)*sin(roll/2)*sin(yaw/2);
+	q2 = cos(pitch/2)*sin(roll/2)*cos(yaw/2) + sin(pitch/2)*cos(roll/2)*sin(yaw/2);
+	q3 = cos(pitch/2)*cos(roll/2)*sin(yaw/2) - sin(pitch/2)*sin(roll/2)*cos(yaw/2);
+
+	Mat q = (Mat_<double>(4,1) <<  q0,q1,q2,q3);
+	return q;
+}
+
+
 
 void dispProjError(Mat Proj, vector<Point2d> pt2, vector<Point3d> p3d)
 {
@@ -853,6 +1040,7 @@ void dispProjError(Mat Proj, vector<Point2d> pt2, vector<Point3d> p3d)
 
 vector<Point3d> dim4to3(Mat dim4)
 {
+	//imp
 vector<Point3d> p3d;
 for(int i = 0; i < dim4.cols; i++)
 {
@@ -885,19 +1073,23 @@ tuple <Mat, Mat> refinePose(Mat cam, vector<Point2d> pt1, vector<Point2d> pt2, M
 	vector<Point3d> Xd;
 	vector<Point2d> s1;
 	vector<Point2d> s2;
-	tie(Xd, s1, s2) = siftPoints(p4d, Proj2, pt1, pt2, 50, 10000, true);
+	//tie(Xd, s1, s2) = siftPoints(p4d, Proj2, pt1, pt2, 50, 10000, true);
 	//bork
 	p3d = dim4to3(p4d);
-	dispProjError(Proj2, pt2, p3d);
+	tie(Xd, s1, s2) = siftError(Proj2, p3d, pt1, pt2, 7500);
+	//dispProjError(Proj2, pt2, p3d);
+	cout << s1.size() << endl;
 	Mat Rtvec;
 	Rodrigues(Rt, Rtvec, noArray());
-	cv::solvePnPRefineLM(Xd, //p3d
+	//cout << "tt: " << tt << endl;
+	cv::solvePnPRefineVVS(Xd, //p3d
 											 s2, //pt2
 											 cam,
 										 	 noArray(),
 											 Rtvec,
 											 tt,
-											 TermCriteria(TermCriteria::EPS+TermCriteria::COUNT, 20, FLT_EPSILON));
+											 TermCriteria(TermCriteria::EPS+TermCriteria::COUNT, 25, FLT_EPSILON),1);
+ Rtvec.at<double>(1,0) = -Rtvec.at<double>(1,0);
  Rodrigues(Rtvec, Rt, noArray());
  tt = normalizeVec(tt);
  //cout << "tt: " << tt << endl;
@@ -905,7 +1097,8 @@ tuple <Mat, Mat> refinePose(Mat cam, vector<Point2d> pt1, vector<Point2d> pt2, M
  Proj2 = cam*proj.t();
  cv::triangulatePoints(Proj1, Proj2, pt1, pt2, p4d);
  p3d = dim4to3(p4d);
- dispProjError(Proj2, pt2, p3d);
+ //dispProjError(Proj2, pt2, p3d);
+ //cout << endl;
  return {Rt, tt};
 /*
 

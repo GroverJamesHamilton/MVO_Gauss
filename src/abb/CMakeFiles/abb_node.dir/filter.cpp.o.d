@@ -1,6 +1,6 @@
-CMakeFiles/abb_node.dir/abb_node.cpp.o: \
- /home/alesm512/ABB_New_Msc/src/abb/abb_node.cpp \
- /usr/include/stdc-predef.h /usr/include/c++/9/iostream \
+CMakeFiles/abb_node.dir/filter.cpp.o: \
+ /home/alesm512/ABB_New_Msc/src/abb/filter.cpp /usr/include/stdc-predef.h \
+ /home/alesm512/ABB_New_Msc/src/abb/filter.h /usr/include/c++/9/iostream \
  /usr/include/x86_64-linux-gnu/c++/9/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/os_defines.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -137,16 +137,54 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /usr/include/c++/9/bits/locale_facets.tcc \
  /usr/include/c++/9/bits/basic_ios.tcc \
  /usr/include/c++/9/bits/ostream.tcc /usr/include/c++/9/istream \
- /usr/include/c++/9/bits/istream.tcc /usr/include/c++/9/vector \
+ /usr/include/c++/9/bits/istream.tcc \
+ /usr/include/opencv4/opencv2/core.hpp \
+ /usr/include/opencv4/opencv2/core/cvdef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+ /usr/include/linux/limits.h \
+ /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+ /usr/include/opencv4/opencv2/core/hal/interface.h \
+ /usr/include/c++/9/cstddef \
+ /usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/emmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/mm_malloc.h \
+ /usr/include/c++/9/stdlib.h /usr/include/c++/9/array \
+ /usr/include/c++/9/utility /usr/include/c++/9/bits/stl_relops.h \
+ /usr/include/opencv4/opencv2/core/version.hpp \
+ /usr/include/opencv4/opencv2/core/base.hpp \
+ /usr/include/opencv4/opencv2/opencv_modules.hpp \
+ /usr/include/c++/9/climits /usr/include/c++/9/algorithm \
+ /usr/include/c++/9/bits/stl_algo.h \
+ /usr/include/c++/9/bits/algorithmfwd.h \
+ /usr/include/c++/9/bits/stl_heap.h /usr/include/c++/9/bits/stl_tempbuf.h \
  /usr/include/c++/9/bits/stl_construct.h \
- /usr/include/c++/9/bits/stl_uninitialized.h /usr/include/c++/9/utility \
- /usr/include/c++/9/bits/stl_relops.h \
+ /usr/include/c++/9/bits/uniform_int_dist.h \
+ /usr/include/c++/9/pstl/glue_algorithm_defs.h \
+ /usr/include/c++/9/functional /usr/include/c++/9/tuple \
+ /usr/include/c++/9/bits/uses_allocator.h \
+ /usr/include/c++/9/bits/invoke.h /usr/include/c++/9/bits/refwrap.h \
+ /usr/include/c++/9/bits/std_function.h /usr/include/c++/9/unordered_map \
+ /usr/include/c++/9/ext/aligned_buffer.h \
+ /usr/include/c++/9/bits/hashtable.h \
+ /usr/include/c++/9/bits/hashtable_policy.h \
+ /usr/include/c++/9/bits/node_handle.h /usr/include/c++/9/optional \
+ /usr/include/c++/9/bits/enable_special_members.h \
+ /usr/include/c++/9/bits/unordered_map.h \
+ /usr/include/c++/9/bits/erase_if.h /usr/include/c++/9/vector \
+ /usr/include/c++/9/bits/stl_uninitialized.h \
  /usr/include/c++/9/bits/stl_vector.h \
  /usr/include/c++/9/bits/stl_bvector.h /usr/include/c++/9/bits/vector.tcc \
- /opt/ros/noetic/include/ros/ros.h /opt/ros/noetic/include/ros/time.h \
- /opt/ros/noetic/include/ros/platform.h /usr/include/c++/9/stdlib.h \
- /usr/include/c++/9/cmath /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+ /usr/include/c++/9/pstl/execution_defs.h \
+ /usr/include/opencv4/opencv2/core/cvstd.hpp /usr/include/c++/9/cstring \
+ /usr/include/string.h /usr/include/strings.h /usr/include/c++/9/cmath \
+ /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
@@ -167,32 +205,72 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /usr/include/c++/9/tr1/poly_hermite.tcc \
  /usr/include/c++/9/tr1/poly_laguerre.tcc \
  /usr/include/c++/9/tr1/riemann_zeta.tcc \
- /opt/ros/noetic/include/ros/exception.h \
- /opt/ros/noetic/include/ros/duration.h /usr/include/c++/9/math.h \
- /usr/include/c++/9/climits \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
- /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
- /usr/include/x86_64-linux-gnu/bits/local_lim.h \
- /usr/include/linux/limits.h \
- /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
- /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
- /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
- /opt/ros/noetic/include/ros/rostime_decl.h \
- /opt/ros/noetic/include/ros/macros.h \
- /usr/include/boost/math/special_functions/round.hpp \
- /usr/include/boost/math/tools/config.hpp /usr/include/boost/config.hpp \
- /usr/include/boost/config/user.hpp \
- /usr/include/boost/config/detail/select_compiler_config.hpp \
- /usr/include/boost/config/compiler/gcc.hpp /usr/include/c++/9/cstddef \
- /usr/include/boost/config/detail/select_stdlib_config.hpp \
- /usr/include/boost/config/stdlib/libstdcpp3.hpp /usr/include/unistd.h \
+ /usr/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
+ /usr/include/c++/9/memory /usr/include/c++/9/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/9/ext/concurrence.h \
+ /usr/include/c++/9/bits/unique_ptr.h \
+ /usr/include/c++/9/bits/shared_ptr.h \
+ /usr/include/c++/9/bits/shared_ptr_base.h \
+ /usr/include/c++/9/bits/allocated_ptr.h \
+ /usr/include/c++/9/bits/shared_ptr_atomic.h \
+ /usr/include/c++/9/bits/atomic_base.h \
+ /usr/include/c++/9/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/9/backward/auto_ptr.h \
+ /usr/include/c++/9/pstl/glue_memory_defs.h \
+ /usr/include/opencv4/opencv2/core/neon_utils.hpp \
+ /usr/include/opencv4/opencv2/core/vsx_utils.hpp /usr/include/assert.h \
+ /usr/include/opencv4/opencv2/core/check.hpp \
+ /usr/include/opencv4/opencv2/core/traits.hpp \
+ /usr/include/opencv4/opencv2/core/matx.hpp \
+ /usr/include/opencv4/opencv2/core/saturate.hpp \
+ /usr/include/opencv4/opencv2/core/fast_math.hpp \
+ /usr/include/opencv4/opencv2/core/types.hpp /usr/include/c++/9/cfloat \
+ /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/opencv4/opencv2/core/mat.hpp \
+ /usr/include/opencv4/opencv2/core/bufferpool.hpp \
+ /usr/include/opencv4/opencv2/core/mat.inl.hpp \
+ /usr/include/opencv4/opencv2/core/persistence.hpp \
+ /usr/include/opencv4/opencv2/core/operations.hpp \
+ /usr/include/opencv4/opencv2/core/cvstd.inl.hpp \
+ /usr/include/c++/9/complex /usr/include/c++/9/sstream \
+ /usr/include/c++/9/bits/sstream.tcc \
+ /usr/include/opencv4/opencv2/core/utility.hpp /usr/include/c++/9/mutex \
+ /usr/include/c++/9/chrono /usr/include/c++/9/ratio \
+ /usr/include/c++/9/ctime /usr/include/c++/9/bits/parse_numbers.h \
+ /usr/include/c++/9/bits/std_mutex.h \
+ /usr/include/c++/9/bits/unique_lock.h \
+ /usr/include/opencv4/opencv2/core/optim.hpp \
+ /usr/include/opencv4/opencv2/core/ovx.hpp \
+ /usr/include/opencv4/opencv2/core/cvdef.h \
+ /usr/include/opencv4/opencv2/highgui.hpp \
+ /usr/include/opencv4/opencv2/imgcodecs.hpp \
+ /usr/include/opencv4/opencv2/videoio.hpp \
+ /usr/include/opencv4/opencv2/imgproc.hpp \
+ /usr/include/opencv4/opencv2/features2d.hpp \
+ /usr/include/opencv4/opencv2/flann/miniflann.hpp \
+ /usr/include/opencv4/opencv2/flann/defines.h \
+ /usr/include/opencv4/opencv2/flann/config.h \
+ /usr/include/opencv4/opencv2/calib3d.hpp \
+ /usr/include/opencv4/opencv2/core/affine.hpp /usr/include/unistd.h \
  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+ /opt/ros/noetic/include/ros/ros.h /opt/ros/noetic/include/ros/time.h \
+ /opt/ros/noetic/include/ros/platform.h \
+ /opt/ros/noetic/include/ros/exception.h \
+ /opt/ros/noetic/include/ros/duration.h /usr/include/c++/9/math.h \
+ /opt/ros/noetic/include/ros/rostime_decl.h \
+ /opt/ros/noetic/include/ros/macros.h \
+ /usr/include/boost/math/special_functions/round.hpp \
+ /usr/include/boost/math/tools/config.hpp /usr/include/boost/config.hpp \
+ /usr/include/boost/config/user.hpp \
+ /usr/include/boost/config/detail/select_compiler_config.hpp \
+ /usr/include/boost/config/compiler/gcc.hpp \
+ /usr/include/boost/config/detail/select_stdlib_config.hpp \
+ /usr/include/boost/config/stdlib/libstdcpp3.hpp \
  /usr/include/boost/config/detail/select_platform_config.hpp \
  /usr/include/boost/config/platform/linux.hpp \
  /usr/include/boost/config/detail/posix_features.hpp \
@@ -207,39 +285,18 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /usr/include/boost/config/workaround.hpp \
  /usr/include/boost/type_traits/is_integral.hpp \
  /usr/include/boost/type_traits/integral_constant.hpp \
- /usr/include/c++/9/algorithm /usr/include/c++/9/bits/stl_algo.h \
- /usr/include/c++/9/bits/algorithmfwd.h \
- /usr/include/c++/9/bits/stl_heap.h /usr/include/c++/9/bits/stl_tempbuf.h \
- /usr/include/c++/9/bits/uniform_int_dist.h \
- /usr/include/c++/9/pstl/glue_algorithm_defs.h \
- /usr/include/c++/9/functional /usr/include/c++/9/tuple \
- /usr/include/c++/9/array /usr/include/c++/9/bits/uses_allocator.h \
- /usr/include/c++/9/bits/invoke.h /usr/include/c++/9/bits/refwrap.h \
- /usr/include/c++/9/bits/std_function.h /usr/include/c++/9/unordered_map \
- /usr/include/c++/9/ext/aligned_buffer.h \
- /usr/include/c++/9/bits/hashtable.h \
- /usr/include/c++/9/bits/hashtable_policy.h \
- /usr/include/c++/9/bits/node_handle.h /usr/include/c++/9/optional \
- /usr/include/c++/9/bits/enable_special_members.h \
- /usr/include/c++/9/bits/unordered_map.h \
- /usr/include/c++/9/bits/erase_if.h \
- /usr/include/c++/9/pstl/execution_defs.h \
- /usr/include/boost/config/no_tr1/cmath.hpp /usr/include/c++/9/cfloat \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
+ /usr/include/boost/config/no_tr1/cmath.hpp \
  /usr/include/boost/math/tools/user.hpp \
  /usr/include/boost/math/policies/error_handling.hpp \
  /usr/include/c++/9/iomanip /usr/include/c++/9/locale \
- /usr/include/c++/9/bits/locale_facets_nonio.h /usr/include/c++/9/ctime \
+ /usr/include/c++/9/bits/locale_facets_nonio.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/time_members.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/messages_members.h \
  /usr/include/libintl.h /usr/include/c++/9/bits/codecvt.h \
  /usr/include/c++/9/bits/locale_facets_nonio.tcc \
  /usr/include/c++/9/bits/locale_conv.h \
- /usr/include/c++/9/bits/unique_ptr.h \
- /usr/include/c++/9/bits/quoted_string.h /usr/include/c++/9/sstream \
- /usr/include/c++/9/bits/sstream.tcc /usr/include/c++/9/cstring \
- /usr/include/string.h /usr/include/strings.h \
- /usr/include/boost/config/no_tr1/complex.hpp /usr/include/c++/9/complex \
+ /usr/include/c++/9/bits/quoted_string.h \
+ /usr/include/boost/config/no_tr1/complex.hpp \
  /usr/include/boost/math/policies/policy.hpp \
  /usr/include/boost/mpl/list.hpp /usr/include/boost/mpl/limits/list.hpp \
  /usr/include/boost/mpl/aux_/na.hpp /usr/include/boost/mpl/bool.hpp \
@@ -522,7 +579,7 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /usr/include/boost/mpl/greater_equal.hpp \
  /usr/include/boost/mpl/aux_/preprocessed/gcc/greater_equal.hpp \
  /usr/include/boost/static_assert.hpp /usr/include/boost/assert.hpp \
- /usr/include/assert.h /usr/include/boost/math/tools/precision.hpp \
+ /usr/include/boost/math/tools/precision.hpp \
  /usr/include/boost/limits.hpp /usr/include/boost/throw_exception.hpp \
  /usr/include/boost/exception/exception.hpp \
  /usr/include/boost/current_function.hpp \
@@ -588,19 +645,9 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /opt/ros/noetic/include/ros/forwards.h /usr/include/c++/9/set \
  /usr/include/c++/9/bits/stl_set.h /usr/include/c++/9/bits/stl_multiset.h \
  /usr/include/c++/9/list /usr/include/c++/9/bits/stl_list.h \
- /usr/include/c++/9/bits/allocated_ptr.h /usr/include/c++/9/bits/list.tcc \
- /usr/include/boost/shared_ptr.hpp \
+ /usr/include/c++/9/bits/list.tcc /usr/include/boost/shared_ptr.hpp \
  /usr/include/boost/smart_ptr/shared_ptr.hpp \
- /usr/include/boost/config/no_tr1/memory.hpp /usr/include/c++/9/memory \
- /usr/include/c++/9/bits/stl_raw_storage_iter.h \
- /usr/include/c++/9/ext/concurrence.h \
- /usr/include/c++/9/bits/shared_ptr.h \
- /usr/include/c++/9/bits/shared_ptr_base.h \
- /usr/include/c++/9/bits/shared_ptr_atomic.h \
- /usr/include/c++/9/bits/atomic_base.h \
- /usr/include/c++/9/bits/atomic_lockfree_defines.h \
- /usr/include/c++/9/backward/auto_ptr.h \
- /usr/include/c++/9/pstl/glue_memory_defs.h \
+ /usr/include/boost/config/no_tr1/memory.hpp \
  /usr/include/boost/checked_delete.hpp \
  /usr/include/boost/core/checked_delete.hpp \
  /usr/include/boost/smart_ptr/detail/shared_count.hpp \
@@ -750,10 +797,6 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /usr/include/boost/system/detail/generic_category.hpp \
  /usr/include/boost/system/detail/system_category_posix.hpp \
  /usr/include/boost/system/detail/std_interoperability.hpp \
- /usr/include/c++/9/mutex /usr/include/c++/9/chrono \
- /usr/include/c++/9/ratio /usr/include/c++/9/bits/parse_numbers.h \
- /usr/include/c++/9/bits/std_mutex.h \
- /usr/include/c++/9/bits/unique_lock.h \
  /usr/include/boost/config/abi_prefix.hpp \
  /usr/include/boost/config/abi_suffix.hpp \
  /usr/include/boost/thread/lock_types.hpp \
@@ -1116,455 +1159,20 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /opt/ros/noetic/include/ros/this_node.h \
  /opt/ros/noetic/include/ros/param.h /opt/ros/noetic/include/ros/topic.h \
  /opt/ros/noetic/include/ros/node_handle.h \
- /opt/ros/noetic/include/image_transport/image_transport.h \
- /opt/ros/noetic/include/image_transport/publisher.h \
- /opt/ros/noetic/include/sensor_msgs/Image.h \
- /opt/ros/noetic/include/ros/message_operations.h \
- /opt/ros/noetic/include/std_msgs/Header.h \
- /opt/ros/noetic/include/image_transport/single_subscriber_publisher.h \
- /opt/ros/noetic/include/image_transport/exports.h \
- /opt/ros/noetic/include/image_transport/exception.h \
- /opt/ros/noetic/include/image_transport/loader_fwds.h \
- /opt/ros/noetic/include/image_transport/subscriber.h \
- /opt/ros/noetic/include/image_transport/transport_hints.h \
- /opt/ros/noetic/include/image_transport/camera_publisher.h \
- /opt/ros/noetic/include/sensor_msgs/CameraInfo.h \
- /opt/ros/noetic/include/sensor_msgs/RegionOfInterest.h \
- /opt/ros/noetic/include/image_transport/camera_subscriber.h \
- /opt/ros/noetic/include/cv_bridge/cv_bridge.h \
- /opt/ros/noetic/include/sensor_msgs/CompressedImage.h \
- /opt/ros/noetic/include/sensor_msgs/image_encodings.h \
- /usr/include/opencv4/opencv2/core/core.hpp \
- /usr/include/opencv4/opencv2/core.hpp \
- /usr/include/opencv4/opencv2/core/cvdef.h \
- /usr/include/opencv4/opencv2/core/hal/interface.h \
- /usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/emmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/xmmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/mmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/mm_malloc.h \
- /usr/include/opencv4/opencv2/core/version.hpp \
- /usr/include/opencv4/opencv2/core/base.hpp \
- /usr/include/opencv4/opencv2/opencv_modules.hpp \
- /usr/include/opencv4/opencv2/core/cvstd.hpp \
- /usr/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
- /usr/include/opencv4/opencv2/core/neon_utils.hpp \
- /usr/include/opencv4/opencv2/core/vsx_utils.hpp \
- /usr/include/opencv4/opencv2/core/check.hpp \
- /usr/include/opencv4/opencv2/core/traits.hpp \
- /usr/include/opencv4/opencv2/core/matx.hpp \
- /usr/include/opencv4/opencv2/core/saturate.hpp \
- /usr/include/opencv4/opencv2/core/fast_math.hpp \
- /usr/include/opencv4/opencv2/core/types.hpp \
- /usr/include/opencv4/opencv2/core/mat.hpp \
- /usr/include/opencv4/opencv2/core/bufferpool.hpp \
- /usr/include/opencv4/opencv2/core/mat.inl.hpp \
- /usr/include/opencv4/opencv2/core/persistence.hpp \
- /usr/include/opencv4/opencv2/core/operations.hpp \
- /usr/include/opencv4/opencv2/core/cvstd.inl.hpp \
- /usr/include/opencv4/opencv2/core/utility.hpp \
- /usr/include/opencv4/opencv2/core/optim.hpp \
- /usr/include/opencv4/opencv2/core/ovx.hpp \
- /usr/include/opencv4/opencv2/core/cvdef.h \
- /usr/include/opencv4/opencv2/imgproc/imgproc.hpp \
- /usr/include/opencv4/opencv2/imgproc.hpp \
- /usr/include/opencv4/opencv2/imgproc/types_c.h \
- /usr/include/opencv4/opencv2/core/core_c.h \
- /usr/include/opencv4/opencv2/core/types_c.h \
- /opt/ros/noetic/include/tf/transform_broadcaster.h \
- /opt/ros/noetic/include/tf/tf.h /opt/ros/noetic/include/tf/exceptions.h \
- /opt/ros/noetic/include/tf2/exceptions.h \
- /opt/ros/noetic/include/tf/time_cache.h \
- /opt/ros/noetic/include/tf/transform_datatypes.h \
- /opt/ros/noetic/include/geometry_msgs/PointStamped.h \
- /opt/ros/noetic/include/geometry_msgs/Point.h \
- /opt/ros/noetic/include/geometry_msgs/Vector3Stamped.h \
- /opt/ros/noetic/include/geometry_msgs/Vector3.h \
- /opt/ros/noetic/include/geometry_msgs/QuaternionStamped.h \
- /opt/ros/noetic/include/geometry_msgs/Quaternion.h \
- /opt/ros/noetic/include/geometry_msgs/TransformStamped.h \
- /opt/ros/noetic/include/geometry_msgs/Transform.h \
- /opt/ros/noetic/include/geometry_msgs/PoseStamped.h \
- /opt/ros/noetic/include/geometry_msgs/Pose.h \
- /opt/ros/noetic/include/tf/LinearMath/Transform.h \
- /opt/ros/noetic/include/tf/LinearMath/Matrix3x3.h \
- /opt/ros/noetic/include/tf/LinearMath/Vector3.h \
- /opt/ros/noetic/include/tf/LinearMath/Scalar.h \
- /opt/ros/noetic/include/tf/LinearMath/MinMax.h \
- /opt/ros/noetic/include/tf/LinearMath/Quaternion.h \
- /opt/ros/noetic/include/tf/LinearMath/QuadWord.h \
- /usr/include/boost/unordered_map.hpp \
- /usr/include/boost/unordered/unordered_map.hpp \
- /usr/include/boost/core/explicit_operator_bool.hpp \
- /usr/include/boost/functional/hash.hpp \
- /usr/include/boost/container_hash/hash.hpp \
- /usr/include/boost/container_hash/detail/hash_float.hpp \
- /usr/include/boost/container_hash/detail/float_functions.hpp \
- /usr/include/boost/container_hash/detail/limits.hpp \
- /usr/include/boost/integer/static_log2.hpp /usr/include/c++/9/typeindex \
- /usr/include/c++/9/variant \
- /usr/include/boost/container_hash/extensions.hpp \
- /usr/include/boost/detail/container_fwd.hpp /usr/include/c++/9/deque \
- /usr/include/c++/9/bits/stl_deque.h /usr/include/c++/9/bits/deque.tcc \
- /usr/include/c++/9/bitset /usr/include/boost/move/move.hpp \
- /usr/include/boost/move/iterator.hpp \
- /usr/include/boost/move/detail/iterator_traits.hpp \
- /usr/include/boost/move/algorithm.hpp \
- /usr/include/boost/move/algo/move.hpp \
- /usr/include/boost/move/detail/iterator_to_raw_pointer.hpp \
- /usr/include/boost/move/detail/to_raw_pointer.hpp \
- /usr/include/boost/move/detail/pointer_element.hpp \
- /usr/include/boost/unordered/detail/map.hpp \
- /usr/include/boost/unordered/detail/implementation.hpp \
- /usr/include/boost/core/pointer_traits.hpp \
- /usr/include/boost/tuple/tuple.hpp \
- /usr/include/boost/tuple/detail/tuple_basic.hpp \
- /usr/include/boost/type_traits/cv_traits.hpp \
- /usr/include/boost/type_traits/add_cv.hpp \
- /usr/include/boost/type_traits/remove_volatile.hpp \
- /usr/include/boost/utility/swap.hpp \
- /usr/include/boost/type_traits/aligned_storage.hpp \
- /usr/include/boost/type_traits/is_empty.hpp \
- /usr/include/boost/type_traits/is_nothrow_move_assignable.hpp \
- /usr/include/boost/type_traits/has_trivial_move_assign.hpp \
- /usr/include/boost/type_traits/is_assignable.hpp \
- /usr/include/boost/type_traits/has_nothrow_assign.hpp \
- /usr/include/boost/type_traits/is_nothrow_move_constructible.hpp \
- /usr/include/boost/type_traits/is_nothrow_swappable.hpp \
- /usr/include/boost/unordered/detail/fwd.hpp \
- /usr/include/boost/utility/addressof.hpp \
- /usr/include/boost/unordered/unordered_map_fwd.hpp \
- /usr/include/boost/functional/hash_fwd.hpp \
- /usr/include/boost/signals2.hpp \
- /usr/include/boost/signals2/deconstruct.hpp \
- /usr/include/boost/signals2/deconstruct_ptr.hpp \
- /usr/include/boost/signals2/postconstructible.hpp \
- /usr/include/boost/signals2/predestructible.hpp \
- /usr/include/boost/signals2/dummy_mutex.hpp \
- /usr/include/boost/signals2/last_value.hpp \
- /usr/include/boost/optional.hpp /usr/include/boost/optional/optional.hpp \
- /usr/include/boost/optional/bad_optional_access.hpp \
- /usr/include/boost/type_traits/has_nothrow_constructor.hpp \
- /usr/include/boost/none.hpp /usr/include/boost/none_t.hpp \
- /usr/include/boost/utility/compare_pointees.hpp \
- /usr/include/boost/utility/result_of.hpp \
- /usr/include/boost/preprocessor/repetition/enum_shifted_params.hpp \
- /usr/include/boost/preprocessor/facilities/intercept.hpp \
- /usr/include/boost/utility/detail/result_of_iterate.hpp \
- /usr/include/boost/optional/optional_fwd.hpp \
- /usr/include/boost/optional/detail/optional_config.hpp \
- /usr/include/boost/optional/detail/optional_factory_support.hpp \
- /usr/include/boost/optional/detail/optional_aligned_storage.hpp \
- /usr/include/boost/optional/detail/optional_trivially_copyable_base.hpp \
- /usr/include/boost/optional/detail/optional_reference_spec.hpp \
- /usr/include/boost/optional/detail/optional_relops.hpp \
- /usr/include/boost/optional/detail/optional_swap.hpp \
- /usr/include/boost/signals2/expired_slot.hpp \
- /usr/include/boost/signals2/signal.hpp \
- /usr/include/boost/signals2/connection.hpp \
- /usr/include/boost/signals2/detail/auto_buffer.hpp \
- /usr/include/boost/signals2/detail/scope_guard.hpp \
- /usr/include/boost/type_traits/has_nothrow_copy.hpp \
- /usr/include/boost/type_traits/has_trivial_assign.hpp \
- /usr/include/boost/type_traits/has_trivial_constructor.hpp \
- /usr/include/boost/signals2/detail/null_output_iterator.hpp \
- /usr/include/boost/function_output_iterator.hpp \
- /usr/include/boost/iterator/function_output_iterator.hpp \
- /usr/include/boost/signals2/detail/unique_lock.hpp \
- /usr/include/boost/signals2/slot.hpp \
- /usr/include/boost/signals2/detail/signals_common.hpp \
- /usr/include/boost/signals2/signal_base.hpp \
- /usr/include/boost/signals2/detail/signals_common_macros.hpp \
- /usr/include/boost/signals2/detail/tracked_objects_visitor.hpp \
- /usr/include/boost/signals2/slot_base.hpp \
- /usr/include/boost/signals2/detail/foreign_ptr.hpp \
- /usr/include/boost/scoped_ptr.hpp \
- /usr/include/boost/smart_ptr/scoped_ptr.hpp \
- /usr/include/boost/variant/apply_visitor.hpp \
- /usr/include/boost/variant/detail/apply_visitor_unary.hpp \
- /usr/include/boost/utility/declval.hpp \
- /usr/include/boost/type_traits/copy_cv_ref.hpp \
- /usr/include/boost/type_traits/copy_cv.hpp \
- /usr/include/boost/type_traits/copy_reference.hpp \
- /usr/include/boost/variant/detail/has_result_type.hpp \
- /usr/include/boost/variant/detail/apply_visitor_binary.hpp \
- /usr/include/boost/variant/detail/apply_visitor_delayed.hpp \
- /usr/include/boost/variant/variant_fwd.hpp \
- /usr/include/boost/variant/detail/config.hpp \
- /usr/include/boost/blank_fwd.hpp \
- /usr/include/boost/preprocessor/enum_shifted_params.hpp \
- /usr/include/boost/variant/detail/substitute_fwd.hpp \
- /usr/include/boost/variant/variant.hpp \
- /usr/include/boost/variant/detail/backup_holder.hpp \
- /usr/include/boost/variant/detail/enable_recursive_fwd.hpp \
- /usr/include/boost/variant/detail/forced_return.hpp \
- /usr/include/boost/variant/detail/initializer.hpp \
- /usr/include/boost/detail/reference_content.hpp \
- /usr/include/boost/variant/recursive_wrapper_fwd.hpp \
- /usr/include/boost/variant/detail/move.hpp \
- /usr/include/boost/move/adl_move_swap.hpp \
- /usr/include/boost/variant/detail/make_variant_list.hpp \
- /usr/include/boost/variant/detail/over_sequence.hpp \
- /usr/include/boost/variant/detail/visitation_impl.hpp \
- /usr/include/boost/variant/detail/cast_storage.hpp \
- /usr/include/boost/variant/detail/hash_variant.hpp \
- /usr/include/boost/variant/static_visitor.hpp \
- /usr/include/boost/variant/detail/std_hash.hpp \
- /usr/include/boost/detail/no_exceptions_support.hpp \
- /usr/include/boost/aligned_storage.hpp /usr/include/boost/blank.hpp \
- /usr/include/boost/detail/templated_streams.hpp \
- /usr/include/boost/type_traits/is_stateless.hpp \
- /usr/include/boost/integer/common_factor_ct.hpp \
- /usr/include/boost/mpl/empty.hpp \
- /usr/include/boost/mpl/aux_/empty_impl.hpp \
- /usr/include/boost/mpl/front.hpp \
- /usr/include/boost/mpl/aux_/front_impl.hpp \
- /usr/include/boost/mpl/insert_range.hpp \
- /usr/include/boost/mpl/insert_range_fwd.hpp \
- /usr/include/boost/mpl/aux_/insert_range_impl.hpp \
- /usr/include/boost/mpl/insert.hpp /usr/include/boost/mpl/insert_fwd.hpp \
- /usr/include/boost/mpl/aux_/insert_impl.hpp \
- /usr/include/boost/mpl/joint_view.hpp \
- /usr/include/boost/mpl/aux_/joint_iter.hpp \
- /usr/include/boost/mpl/aux_/iter_push_front.hpp \
- /usr/include/boost/type_traits/same_traits.hpp \
- /usr/include/boost/mpl/is_sequence.hpp \
- /usr/include/boost/mpl/max_element.hpp /usr/include/boost/mpl/size_t.hpp \
- /usr/include/boost/mpl/size_t_fwd.hpp /usr/include/boost/mpl/sizeof.hpp \
- /usr/include/boost/mpl/transform.hpp \
- /usr/include/boost/mpl/pair_view.hpp \
- /usr/include/boost/mpl/iterator_category.hpp \
- /usr/include/boost/mpl/min_max.hpp \
- /usr/include/boost/variant/detail/variant_io.hpp \
- /usr/include/boost/signals2/trackable.hpp \
- /usr/include/boost/signals2/variadic_slot.hpp \
- /usr/include/boost/signals2/detail/variadic_arg_type.hpp \
- /usr/include/boost/signals2/detail/slot_template.hpp \
- /usr/include/boost/signals2/detail/replace_slot_function.hpp \
- /usr/include/boost/signals2/detail/result_type_wrapper.hpp \
- /usr/include/boost/signals2/detail/slot_groups.hpp \
- /usr/include/boost/signals2/detail/slot_call_iterator.hpp \
- /usr/include/boost/signals2/optional_last_value.hpp \
- /usr/include/boost/signals2/mutex.hpp \
- /usr/include/boost/signals2/detail/lwm_pthreads.hpp \
- /usr/include/boost/signals2/variadic_signal.hpp \
- /usr/include/boost/preprocessor/control/expr_if.hpp \
- /usr/include/boost/signals2/detail/variadic_slot_invoker.hpp \
- /usr/include/boost/signals2/detail/signal_template.hpp \
- /usr/include/boost/signals2/signal_type.hpp \
- /usr/include/boost/parameter/config.hpp \
- /usr/include/boost/parameter/template_keyword.hpp \
- /usr/include/boost/parameter/aux_/template_keyword.hpp \
- /usr/include/boost/mp11/integral.hpp /usr/include/boost/mp11/version.hpp \
- /usr/include/boost/mp11/utility.hpp \
- /usr/include/boost/mp11/detail/config.hpp \
- /usr/include/boost/parameter/parameters.hpp \
- /usr/include/boost/parameter/aux_/arg_list.hpp \
- /usr/include/boost/parameter/aux_/void.hpp \
- /usr/include/boost/parameter/aux_/yesno.hpp \
- /usr/include/boost/parameter/aux_/result_of0.hpp \
- /usr/include/boost/parameter/aux_/use_default_tag.hpp \
- /usr/include/boost/parameter/aux_/default.hpp \
- /usr/include/boost/mp11/list.hpp \
- /usr/include/boost/mp11/detail/mp_list.hpp \
- /usr/include/boost/mp11/detail/mp_is_list.hpp \
- /usr/include/boost/mp11/detail/mp_append.hpp \
- /usr/include/boost/parameter/aux_/preprocessor/nullptr.hpp \
- /usr/include/boost/parameter/aux_/is_maybe.hpp \
- /usr/include/boost/parameter/aux_/tagged_argument_fwd.hpp \
- /usr/include/boost/parameter/aux_/parameter_requirements.hpp \
- /usr/include/boost/parameter/aux_/pack/parameter_requirements.hpp \
- /usr/include/boost/parameter/aux_/augment_predicate.hpp \
- /usr/include/boost/parameter/keyword_fwd.hpp \
- /usr/include/boost/parameter/aux_/lambda_tag.hpp \
- /usr/include/boost/parameter/aux_/has_nested_template_fn.hpp \
- /usr/include/boost/parameter/value_type.hpp \
- /usr/include/boost/parameter/aux_/is_placeholder.hpp \
- /usr/include/boost/mp11/bind.hpp /usr/include/boost/mp11/algorithm.hpp \
- /usr/include/boost/mp11/set.hpp /usr/include/boost/mp11/function.hpp \
- /usr/include/boost/mp11/detail/mp_count.hpp \
- /usr/include/boost/mp11/detail/mp_plus.hpp \
- /usr/include/boost/mp11/detail/mp_min_element.hpp \
- /usr/include/boost/mp11/detail/mp_fold.hpp \
- /usr/include/boost/mp11/detail/mp_void.hpp \
- /usr/include/boost/mp11/detail/mp_copy_if.hpp \
- /usr/include/boost/mp11/detail/mp_remove_if.hpp \
- /usr/include/boost/mp11/detail/mp_map_find.hpp \
- /usr/include/boost/mp11/detail/mp_with_index.hpp \
- /usr/include/boost/mp11/integer_sequence.hpp \
- /usr/include/boost/mpl/has_key_fwd.hpp \
- /usr/include/boost/mpl/count_fwd.hpp \
- /usr/include/boost/mpl/key_type_fwd.hpp \
- /usr/include/boost/mpl/value_type_fwd.hpp \
- /usr/include/boost/mpl/order_fwd.hpp \
- /usr/include/boost/parameter/aux_/pack/make_arg_list.hpp \
- /usr/include/boost/parameter/aux_/pack/unmatched_argument.hpp \
- /usr/include/boost/parameter/aux_/pack/tag_type.hpp \
- /usr/include/boost/parameter/deduced.hpp \
- /usr/include/boost/parameter/aux_/use_default.hpp \
- /usr/include/boost/parameter/required.hpp \
- /usr/include/boost/parameter/optional.hpp \
- /usr/include/boost/parameter/aux_/pack/is_named_argument.hpp \
- /usr/include/boost/parameter/aux_/is_tagged_argument.hpp \
- /usr/include/boost/parameter/aux_/pack/insert_tagged.hpp \
- /usr/include/boost/parameter/aux_/set.hpp \
- /usr/include/boost/parameter/aux_/pack/deduce_tag.hpp \
- /usr/include/boost/parameter/aux_/pack/tag_deduced.hpp \
- /usr/include/boost/parameter/aux_/pack/make_parameter_spec_items.hpp \
- /usr/include/boost/parameter/aux_/pack/make_deduced_items.hpp \
- /usr/include/boost/parameter/aux_/pack/deduced_item.hpp \
- /usr/include/boost/parameter/aux_/pack/satisfies.hpp \
- /usr/include/boost/parameter/aux_/pack/as_parameter_requirements.hpp \
- /usr/include/boost/parameter/aux_/pack/predicate.hpp \
- /usr/include/boost/parameter/aux_/always_true_predicate.hpp \
- /usr/include/boost/parameter/aux_/pack/make_items.hpp \
- /usr/include/boost/parameter/aux_/pack/item.hpp \
- /usr/include/boost/parameter/aux_/pack/tag_keyword_arg.hpp \
- /usr/include/boost/parameter/aux_/tag.hpp \
- /usr/include/boost/parameter/aux_/unwrap_cv_reference.hpp \
- /usr/include/boost/parameter/aux_/tagged_argument.hpp \
- /usr/include/boost/parameter/aux_/pack/tag_template_keyword_arg.hpp \
- /usr/include/boost/signals2/shared_connection_block.hpp \
- /opt/ros/noetic/include/geometry_msgs/TwistStamped.h \
- /opt/ros/noetic/include/geometry_msgs/Twist.h \
- /opt/ros/noetic/include/tf2_ros/buffer.h \
- /opt/ros/noetic/include/tf2_ros/buffer_interface.h \
- /opt/ros/noetic/include/tf2/buffer_core.h \
- /opt/ros/noetic/include/tf2/transform_storage.h \
- /opt/ros/noetic/include/tf2/LinearMath/Vector3.h \
- /opt/ros/noetic/include/tf2/LinearMath/Scalar.h \
- /opt/ros/noetic/include/tf2/LinearMath/MinMax.h \
- /opt/ros/noetic/include/tf2/LinearMath/Quaternion.h \
- /opt/ros/noetic/include/tf2/LinearMath/Vector3.h \
- /opt/ros/noetic/include/tf2/LinearMath/QuadWord.h \
- /opt/ros/noetic/include/ros/message_forward.h \
- /opt/ros/noetic/include/ros/duration.h \
- /opt/ros/noetic/include/tf2/transform_datatypes.h \
- /opt/ros/noetic/include/tf2/convert.h \
- /opt/ros/noetic/include/tf2/impl/convert.h \
- /opt/ros/noetic/include/tf2_msgs/FrameGraph.h \
- /opt/ros/noetic/include/tf2_msgs/FrameGraphRequest.h \
- /opt/ros/noetic/include/tf2_msgs/FrameGraphResponse.h \
- /opt/ros/noetic/include/tf/tfMessage.h \
- /opt/ros/noetic/include/tf2_ros/transform_broadcaster.h \
- /opt/ros/noetic/include/nav_msgs/Odometry.h \
- /opt/ros/noetic/include/geometry_msgs/PoseWithCovariance.h \
- /opt/ros/noetic/include/geometry_msgs/TwistWithCovariance.h \
- /usr/include/opencv4/opencv2/highgui/highgui.hpp \
- /usr/include/opencv4/opencv2/highgui.hpp \
- /usr/include/opencv4/opencv2/imgcodecs.hpp \
- /usr/include/opencv4/opencv2/videoio.hpp \
- /usr/include/opencv4/opencv2/features2d/features2d.hpp \
- /usr/include/opencv4/opencv2/features2d.hpp \
- /usr/include/opencv4/opencv2/flann/miniflann.hpp \
- /usr/include/opencv4/opencv2/flann/defines.h \
- /usr/include/opencv4/opencv2/flann/config.h \
- /usr/include/opencv4/opencv2/opencv.hpp \
- /usr/include/opencv4/opencv2/calib3d.hpp \
- /usr/include/opencv4/opencv2/core/affine.hpp \
- /usr/include/opencv4/opencv2/dnn.hpp \
- /usr/include/opencv4/opencv2/dnn/dnn.hpp \
- /usr/include/opencv4/opencv2/core/async.hpp \
- /usr/include/opencv4/opencv2/dnn/version.hpp \
- /usr/include/opencv4/opencv2/dnn/dict.hpp \
- /usr/include/opencv4/opencv2/dnn/layer.hpp \
- /usr/include/opencv4/opencv2/dnn/dnn.inl.hpp \
- /usr/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
- /usr/include/opencv4/opencv2/dnn/dnn.hpp \
- /usr/include/opencv4/opencv2/flann.hpp \
- /usr/include/opencv4/opencv2/flann/flann_base.hpp \
- /usr/include/opencv4/opencv2/flann/general.h \
- /usr/include/opencv4/opencv2/flann/matrix.h \
- /usr/include/opencv4/opencv2/flann/params.h \
- /usr/include/opencv4/opencv2/flann/any.h \
- /usr/include/opencv4/opencv2/flann/defines.h \
- /usr/include/opencv4/opencv2/flann/saving.h \
- /usr/include/opencv4/opencv2/flann/nn_index.h \
- /usr/include/opencv4/opencv2/flann/result_set.h \
- /usr/include/opencv4/opencv2/flann/all_indices.h \
- /usr/include/opencv4/opencv2/flann/kdtree_index.h \
- /usr/include/opencv4/opencv2/flann/dynamic_bitset.h \
- /usr/include/opencv4/opencv2/flann/dist.h \
- /usr/include/opencv4/opencv2/flann/heap.h \
- /usr/include/opencv4/opencv2/flann/allocator.h \
- /usr/include/opencv4/opencv2/flann/random.h \
- /usr/include/opencv4/opencv2/flann/kdtree_single_index.h \
- /usr/include/opencv4/opencv2/flann/kmeans_index.h \
- /usr/include/opencv4/opencv2/flann/logger.h \
- /usr/include/opencv4/opencv2/flann/composite_index.h \
- /usr/include/opencv4/opencv2/flann/linear_index.h \
- /usr/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
- /usr/include/opencv4/opencv2/flann/lsh_index.h \
- /usr/include/opencv4/opencv2/flann/lsh_table.h \
- /usr/include/opencv4/opencv2/flann/autotuned_index.h \
- /usr/include/opencv4/opencv2/flann/ground_truth.h \
- /usr/include/opencv4/opencv2/flann/index_testing.h \
- /usr/include/opencv4/opencv2/flann/timer.h \
- /usr/include/opencv4/opencv2/flann/sampling.h \
- /usr/include/opencv4/opencv2/ml.hpp \
- /usr/include/opencv4/opencv2/ml/ml.inl.hpp \
- /usr/include/opencv4/opencv2/objdetect.hpp \
- /usr/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
- /usr/include/opencv4/opencv2/photo.hpp \
- /usr/include/opencv4/opencv2/shape.hpp \
- /usr/include/opencv4/opencv2/shape/emdL1.hpp \
- /usr/include/opencv4/opencv2/shape/shape_transformer.hpp \
- /usr/include/opencv4/opencv2/shape/hist_cost.hpp \
- /usr/include/opencv4/opencv2/shape/shape_distance.hpp \
- /usr/include/opencv4/opencv2/stitching.hpp \
- /usr/include/opencv4/opencv2/stitching/warpers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
- /usr/include/opencv4/opencv2/core/cuda.hpp \
- /usr/include/opencv4/opencv2/core/cuda_types.hpp \
- /usr/include/opencv4/opencv2/core/cuda.inl.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/util.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
- /usr/include/c++/9/queue /usr/include/c++/9/bits/stl_queue.h \
- /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/blenders.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
- /usr/include/opencv4/opencv2/superres.hpp \
- /usr/include/opencv4/opencv2/superres/optical_flow.hpp \
- /usr/include/opencv4/opencv2/video.hpp \
- /usr/include/opencv4/opencv2/video/tracking.hpp \
- /usr/include/opencv4/opencv2/video/background_segm.hpp \
- /usr/include/opencv4/opencv2/videostab.hpp \
- /usr/include/opencv4/opencv2/videostab/stabilizer.hpp \
- /usr/include/opencv4/opencv2/videostab/global_motion.hpp \
- /usr/include/c++/9/fstream \
- /usr/include/x86_64-linux-gnu/c++/9/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h \
- /usr/include/c++/9/bits/fstream.tcc \
- /usr/include/opencv4/opencv2/videostab/optical_flow.hpp \
- /usr/include/opencv4/opencv2/videostab/motion_core.hpp \
- /usr/include/opencv4/opencv2/videostab/outlier_rejection.hpp \
- /usr/include/opencv4/opencv2/videostab/motion_stabilizing.hpp \
- /usr/include/opencv4/opencv2/videostab/frame_source.hpp \
- /usr/include/opencv4/opencv2/videostab/log.hpp \
- /usr/include/opencv4/opencv2/videostab/inpainting.hpp \
- /usr/include/opencv4/opencv2/videostab/fast_marching.hpp \
- /usr/include/opencv4/opencv2/videostab/fast_marching_inl.hpp \
- /usr/include/opencv4/opencv2/videostab/deblurring.hpp \
- /usr/include/opencv4/opencv2/videostab/wobble_suppression.hpp \
- /usr/include/opencv4/opencv2/videostab/ring_buffer.hpp \
  /usr/include/opencv4/opencv2/viz.hpp \
  /usr/include/opencv4/opencv2/viz/types.hpp \
  /usr/include/opencv4/opencv2/viz/widgets.hpp \
  /usr/include/opencv4/opencv2/viz/viz3d.hpp \
- /usr/include/opencv4/opencv2/viz/vizcore.hpp \
- /home/alesm512/ABB_New_Msc/src/abb/function.h /usr/include/c++/9/random \
+ /usr/include/opencv4/opencv2/viz/vizcore.hpp /usr/include/c++/9/random \
  /usr/include/c++/9/bits/random.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/opt_random.h \
  /usr/include/c++/9/bits/random.tcc /usr/include/c++/9/numeric \
  /usr/include/c++/9/bits/stl_numeric.h \
  /usr/include/c++/9/pstl/glue_numeric_defs.h /usr/include/armadillo \
+ /usr/include/c++/9/fstream \
+ /usr/include/x86_64-linux-gnu/c++/9/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h \
+ /usr/include/c++/9/bits/fstream.tcc \
  /usr/include/armadillo_bits/compiler_extra.hpp \
  /usr/include/armadillo_bits/config.hpp \
  /usr/include/armadillo_bits/compiler_setup.hpp \
@@ -2139,157 +1747,4 @@ CMakeFiles/abb_node.dir/abb_node.cpp.o: \
  /usr/include/armadillo_bits/newarp_TridiagEigen_meat.hpp \
  /usr/include/armadillo_bits/newarp_UpperHessenbergEigen_meat.hpp \
  /usr/include/armadillo_bits/newarp_UpperHessenbergQR_meat.hpp \
- /usr/include/armadillo_bits/compiler_setup_post.hpp \
- /home/alesm512/ABB_New_Msc/src/abb/filter.h \
- /opt/ros/noetic/include/tf/transform_listener.h \
- /opt/ros/noetic/include/sensor_msgs/PointCloud.h \
- /opt/ros/noetic/include/geometry_msgs/Point32.h \
- /opt/ros/noetic/include/sensor_msgs/ChannelFloat32.h \
- /opt/ros/noetic/include/std_msgs/Empty.h \
- /opt/ros/noetic/include/ros/callback_queue.h \
- /opt/ros/noetic/include/ros/callback_queue_interface.h \
- /usr/include/boost/thread/condition_variable.hpp \
- /usr/include/boost/thread/pthread/condition_variable.hpp \
- /usr/include/boost/thread/interruption.hpp \
- /usr/include/boost/thread/pthread/thread_data.hpp \
- /usr/include/boost/thread/lock_guard.hpp \
- /usr/include/boost/thread/detail/lockable_wrapper.hpp \
- /usr/include/boost/thread/pthread/condition_variable_fwd.hpp \
- /usr/include/boost/thread/cv_status.hpp \
- /usr/include/boost/core/scoped_enum.hpp \
- /usr/include/boost/enable_shared_from_this.hpp \
- /usr/include/boost/smart_ptr/enable_shared_from_this.hpp \
- /usr/include/boost/thread/shared_mutex.hpp \
- /usr/include/boost/thread/pthread/shared_mutex.hpp \
- /usr/include/boost/thread/detail/thread_interruption.hpp \
- /usr/include/boost/thread/tss.hpp \
- /opt/ros/noetic/include/tf/FrameGraph.h \
- /opt/ros/noetic/include/tf/FrameGraphRequest.h \
- /opt/ros/noetic/include/tf/FrameGraphResponse.h \
- /usr/include/boost/thread.hpp /usr/include/boost/thread/thread.hpp \
- /usr/include/boost/thread/thread_only.hpp \
- /usr/include/boost/thread/detail/thread.hpp \
- /usr/include/boost/thread/detail/thread_heap_alloc.hpp \
- /usr/include/boost/thread/pthread/thread_heap_alloc.hpp \
- /usr/include/boost/thread/detail/make_tuple_indices.hpp \
- /usr/include/boost/thread/detail/invoke.hpp \
- /usr/include/boost/thread/detail/is_convertible.hpp \
- /usr/include/boost/io/ios_state.hpp /usr/include/boost/io_fwd.hpp \
- /usr/include/boost/thread/detail/thread_group.hpp \
- /usr/include/boost/thread/csbl/memory/unique_ptr.hpp \
- /usr/include/boost/thread/csbl/memory/config.hpp \
- /usr/include/boost/move/unique_ptr.hpp \
- /usr/include/boost/move/detail/unique_ptr_meta_utils.hpp \
- /usr/include/boost/move/default_delete.hpp \
- /usr/include/boost/move/make_unique.hpp \
- /usr/include/boost/thread/once.hpp \
- /usr/include/boost/thread/pthread/once_atomic.hpp \
- /usr/include/boost/atomic.hpp /usr/include/boost/atomic/atomic.hpp \
- /usr/include/boost/atomic/capabilities.hpp \
- /usr/include/boost/atomic/detail/config.hpp \
- /usr/include/boost/atomic/detail/platform.hpp \
- /usr/include/boost/atomic/detail/int_sizes.hpp \
- /usr/include/boost/atomic/detail/float_sizes.hpp \
- /usr/include/boost/atomic/detail/caps_gcc_atomic.hpp \
- /usr/include/boost/atomic/detail/hwcaps_gcc_x86.hpp \
- /usr/include/boost/atomic/fences.hpp /usr/include/boost/memory_order.hpp \
- /usr/include/boost/atomic/detail/operations.hpp \
- /usr/include/boost/atomic/detail/operations_lockfree.hpp \
- /usr/include/boost/atomic/detail/ops_gcc_atomic.hpp \
- /usr/include/boost/atomic/detail/storage_type.hpp \
- /usr/include/boost/atomic/detail/string_ops.hpp \
- /usr/include/boost/atomic/detail/operations_fwd.hpp \
- /usr/include/boost/atomic/detail/ops_emulated.hpp \
- /usr/include/boost/atomic/detail/lockpool.hpp \
- /usr/include/boost/atomic/detail/link.hpp \
- /usr/include/boost/atomic/atomic_flag.hpp \
- /usr/include/boost/atomic/detail/atomic_flag.hpp \
- /usr/include/boost/atomic/detail/atomic_template.hpp \
- /usr/include/boost/atomic/detail/bitwise_cast.hpp \
- /usr/include/boost/atomic/detail/addressof.hpp \
- /usr/include/boost/atomic/detail/type_traits/integral_constant.hpp \
- /usr/include/boost/atomic/detail/integral_extend.hpp \
- /usr/include/boost/atomic/detail/type_traits/is_signed.hpp \
- /usr/include/boost/atomic/detail/type_traits/make_signed.hpp \
- /usr/include/boost/type_traits/make_signed.hpp \
- /usr/include/boost/atomic/detail/type_traits/make_unsigned.hpp \
- /usr/include/boost/atomic/detail/extra_operations_fwd.hpp \
- /usr/include/boost/atomic/detail/type_traits/is_integral.hpp \
- /usr/include/boost/atomic/detail/type_traits/is_function.hpp \
- /usr/include/boost/atomic/detail/type_traits/is_floating_point.hpp \
- /usr/include/boost/atomic/detail/type_traits/is_trivially_default_constructible.hpp \
- /usr/include/boost/atomic/detail/type_traits/conditional.hpp \
- /usr/include/boost/atomic/detail/bitwise_fp_cast.hpp \
- /usr/include/boost/atomic/detail/fp_operations_fwd.hpp \
- /usr/include/boost/atomic/detail/extra_fp_operations_fwd.hpp \
- /usr/include/boost/atomic/detail/extra_operations.hpp \
- /usr/include/boost/atomic/detail/extra_ops_generic.hpp \
- /usr/include/boost/atomic/detail/extra_ops_emulated.hpp \
- /usr/include/boost/atomic/detail/extra_ops_gcc_x86.hpp \
- /usr/include/boost/atomic/detail/fp_operations.hpp \
- /usr/include/boost/atomic/detail/fp_ops_generic.hpp \
- /usr/include/boost/atomic/detail/fp_ops_emulated.hpp \
- /usr/include/boost/atomic/detail/extra_fp_operations.hpp \
- /usr/include/boost/atomic/detail/extra_fp_ops_generic.hpp \
- /usr/include/boost/atomic/detail/type_traits/is_iec559.hpp \
- /usr/include/boost/atomic/detail/extra_fp_ops_emulated.hpp \
- /usr/include/boost/thread/recursive_mutex.hpp \
- /usr/include/boost/thread/pthread/recursive_mutex.hpp \
- /usr/include/boost/thread/locks.hpp \
- /usr/include/boost/thread/lock_algorithms.hpp \
- /usr/include/boost/thread/shared_lock_guard.hpp \
- /usr/include/boost/thread/barrier.hpp \
- /usr/include/boost/thread/detail/nullary_function.hpp \
- /usr/include/boost/thread/detail/memory.hpp \
- /usr/include/boost/thread/csbl/memory/pointer_traits.hpp \
- /usr/include/boost/thread/csbl/memory/allocator_arg.hpp \
- /usr/include/boost/thread/csbl/memory/allocator_traits.hpp \
- /usr/include/boost/thread/csbl/memory/scoped_allocator.hpp \
- /usr/include/boost/thread/csbl/memory/shared_ptr.hpp \
- /usr/include/boost/thread/future.hpp \
- /usr/include/boost/thread/detail/invoker.hpp \
- /usr/include/boost/thread/csbl/tuple.hpp \
- /usr/include/boost/thread/detail/variadic_header.hpp \
- /usr/include/boost/thread/detail/variadic_footer.hpp \
- /usr/include/boost/thread/exceptional_ptr.hpp \
- /usr/include/boost/exception_ptr.hpp \
- /usr/include/boost/exception/detail/exception_ptr.hpp \
- /usr/include/boost/exception/info.hpp \
- /usr/include/boost/exception/to_string_stub.hpp \
- /usr/include/boost/exception/to_string.hpp \
- /usr/include/boost/exception/detail/is_output_streamable.hpp \
- /usr/include/boost/exception/detail/object_hex_dump.hpp \
- /usr/include/boost/exception/detail/type_info.hpp \
- /usr/include/boost/core/typeinfo.hpp \
- /usr/include/boost/exception/detail/error_info_impl.hpp \
- /usr/include/boost/exception/detail/shared_ptr.hpp \
- /usr/include/boost/exception/diagnostic_information.hpp \
- /usr/include/boost/exception/get_error_info.hpp \
- /usr/include/boost/exception/current_exception_cast.hpp \
- /usr/include/boost/exception/detail/clone_current_exception.hpp \
- /usr/include/boost/thread/futures/future_error.hpp \
- /usr/include/boost/thread/futures/future_error_code.hpp \
- /usr/include/boost/thread/futures/future_status.hpp \
- /usr/include/boost/thread/futures/is_future_type.hpp \
- /usr/include/boost/thread/futures/launch.hpp \
- /usr/include/boost/thread/futures/wait_for_all.hpp \
- /usr/include/boost/thread/futures/wait_for_any.hpp \
- /usr/include/boost/scoped_array.hpp \
- /usr/include/boost/smart_ptr/scoped_array.hpp \
- /usr/include/boost/thread/executor.hpp \
- /usr/include/boost/thread/executors/executor.hpp \
- /usr/include/boost/thread/executors/executor_adaptor.hpp \
- /usr/include/boost/thread/executors/generic_executor_ref.hpp \
- /usr/include/boost/type_traits/is_fundamental.hpp \
- /usr/include/boost/thread/detail/atomic_undef_macros.hpp \
- /usr/include/boost/thread/detail/atomic_redef_macros.hpp \
- /opt/ros/noetic/include/tf2_ros/transform_listener.h \
- /opt/ros/noetic/include/tf2_msgs/TFMessage.h \
- /opt/ros/noetic/include/tf/message_filter.h \
- /opt/ros/noetic/include/message_filters/connection.h \
- /opt/ros/noetic/include/message_filters/macros.h \
- /opt/ros/noetic/include/message_filters/simple_filter.h \
- /opt/ros/noetic/include/message_filters/connection.h \
- /opt/ros/noetic/include/message_filters/signal1.h \
- /opt/ros/noetic/include/message_filters/subscriber.h \
- /opt/ros/noetic/include/message_filters/simple_filter.h
+ /usr/include/armadillo_bits/compiler_setup_post.hpp
