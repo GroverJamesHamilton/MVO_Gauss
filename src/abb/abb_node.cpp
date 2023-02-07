@@ -5,7 +5,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CameraInfo.h> //
+#include <sensor_msgs/CameraInfo.h>
 // Odometry node handling
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
@@ -28,7 +28,7 @@
 #include <opencv2/viz.hpp>
 #include <random>
 //Algorithm iteration index
-double it = 1;
+int it = 1;
 //Frame parameters for different purposes
 Mat oldIm, oldIm0, Im, Im0, ImS, oldImS;
 //Below are the rotation and translation matrices used for different purposes
@@ -44,14 +44,15 @@ Mat c2w = (Mat_<double>(3,3) << 0, 0, 1,
  															 -1, 0, 0,
 																0,-1, 0);
 //Features, descriptors, matches
-vector<KeyPoint> keyp1, keyp2, keyp3, keyp4, keyp5, keyp6;
+vector<KeyPoint> keyp1, keyp2, keyp3, keyp4, keyp5, keyp6, testkeyp;
 Mat desc1, desc2, desc3, desc4, desc5, desc6;
 vector<DMatch> matchesOdom, matchesScale;
+float pitchEKF, rollEKF, yawEKF;
 //Triangulated 3D-points
 cv::Mat point3d, pointX;
 vector<Point2d> scene1, scene2, scene3, scene4, scene5, scene6;
 //For publishing the yaw parameters
-float yaw, yawDiff, yawVel;
+float yaw, yawDiff, yawVel, pitch, roll;
 double dt = 0.1; //The sample time for the rosbag dataset [in s], default would be 0.1 or 0.03
 //Display parameters
 double dim = 500;
@@ -70,14 +71,22 @@ vector<Point2d> sift1, sift2;
 int xpix = 1242;
 int ypix = 375;
 
-int xO2 = 450;
-int yO2 = 225;
-cv::Rect cropScale(xO2, yO2, xpix - 2*xO2, ypix - yO2); //Only a small subset of the frame is extracted
+int xOff = 500; //knop 500
+int yOff = 225; //225
+cv::Rect cropScale(xOff, yOff, xpix - 2*xOff, ypix - yOff); //Only a small subset of the frame is extracted
 //The printed trajectory, Mainly for visually
 Mat trajectory = Mat::zeros(dim, dim, CV_8UC3);
 Mat traj;
 int X,Y, Xekf, Yekf; //Pixel location to print trajectory
-double x,y,z,vx,vy, xekf, yekf, px, py;
+double x,y,z,vx,vy,vz, xekf, yekf, px, py;
+double ErrScale = 0;
+double errFilt = 0;
+int iters = 0;
+double timest = 0;
+int GMMtraining = 0;
+arma::gmm_diag model1;
+arma::gmm_diag model2;
+arma::gmm_diag model3;
 //Initialize the ORB detectors/descriptors
 //For the unscaled visual odometry
 //Primarily: The max numbers of features and FAST threshold are the most crucial parameters
@@ -90,10 +99,9 @@ Ptr<ORB> orbOdom = cv::ORB::create(750, //Max number of features
 		2,																	 //WTA_K
 		ORB::FAST_SCORE,										 //Which algorithm is used to rank features, either FAST_SCORE or HARRIS_SCORE
 	  31,                                  //Descriptor patch size
-		10);                                  //The FAST threshold
-
-//For the scale recovery
-Ptr<ORB> orbScale = cv::ORB::create(3000, 1.1f, 12, 5, 0, 2, ORB::HARRIS_SCORE, 40, 25);
+		11);                                  //The FAST threshold
+//For the scale recovery knop
+Ptr<ORB> orbScale = cv::ORB::create(1000, 1.1f, 12, 5, 0, 2, ORB::HARRIS_SCORE, 40, 25);
 
 double fx = 721.5377; //903.7596 //721.5377
 double fy = 721.5377; //901.9653 //721.5377
@@ -107,15 +115,15 @@ double oy = 172.8540; //224.2509 //172.8540
 	  {0,0,1}};
 
  double kScale[3][3] = {
-		{fx,0,ox - xO2}, //Principal point needs to be offset if image is cropped
-		{0,fy,oy - yO2},
+		{fx,0,ox - xOff}, //Principal point needs to be offset if image is cropped
+		{0,fy,oy - yOff},
 		{0,0,1}};
 
 	Mat K = Mat(3,3,CV_64F,kOdom);
 	Mat Kscale = Mat(3,3,CV_64F,kScale);
 	Mat P1, P2;
 	Mat normalVec;
-	double n1,n2,n3,hprim;
+	double n1,n2,n3,hprim, sig, mup;
 	Mat canvas;
 	Mat pnts3D;
 	int err = 0;
@@ -131,7 +139,7 @@ double yawprevGT = -3.00251;
 double velocity;
 //Change parameters here:
 bool scaleRecoveryMode = true;
-int queueSize = 803;
+int queueSize = 800; //800 knop
 //Extended Kalman Filter ekf
 
 Mat Xup; //State update
@@ -141,21 +149,36 @@ double mse = 0;
 double errit = 0;
 double pi = 3.14159265359;
 //EKF Parameters
-Mat xhat = (Mat_<double>(13,1) << 0.9,-0.9,0.1, 4,-4,0, 0,0,-0.3755591,0.9267984, 0,0,0);
+Mat xhat = (Mat_<double>(13,1) << 0,0,0, 4.5,-4.5,0, 0.9267984,0,0,-0.3755591, 0,0,0);
+Mat Rk = (Mat_<double>(6,6) <<  0.1, 0, 0, 0,  0, 0,
+															 	0, 0.1, 0, 0,  0, 0,
+															 	0, 0, 0.01, 0,  0, 0,
+															 	0, 0, 0, 0.00001, 0, 0,
+																0, 0, 0, 0, 0.00001, 0,
+															 	0, 0, 0, 0, 0, 0.00001);
+Mat Qk = (Mat_<double>(6,6) <<  0.05, 0, 0, 0,  0, 0,
+															 	0, 0.05, 0, 0,  0, 0,
+															 	0, 0, 0.01, 0,  0, 0,
+															 	0, 0, 0, 0.0005, 0, 0,
+																0, 0, 0, 0, 0.0005, 0,
+															 	0, 0, 0, 0, 0, 0.0005);
 
-Mat Rk = (Mat_<double>(3,3) << 1, 0, 0,
-															 0, 1, 0,
-															 0, 0, 1);
+Mat Pkk = (Mat_<double>(13,13) << 0.05,0,0,0,0,0,0,0,0,0,0,0,0,
+                                  0,0.05,0,0,0,0,0,0,0,0,0,0,0,
+                                  0,0,0.06,0,0,0,0,0,0,0,0,0,0,
 
-Mat Qk = (Mat_<double>(6,6) <<  0.5, 0, 0, 0,   0, 0,
-															 	0, 0.5, 0, 0,   0, 0,
-															 	0, 0, 0.5, 0,   0, 0,
-															 	0, 0, 0, 0.000001, 0, 0,
-																0, 0, 0, 0, 0.000001, 0,
-															 	0, 0, 0, 0, 0, 0.000001);
+                                  0,0,0,0.025,0,0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0.025,0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0.04,0,0,0,0,0,0,0,
 
-Mat Pk = cv::Mat::eye(13,13,CV_64F);
-Mat Pkk = 100*Pk;
+                                  0,0,0,0,0,0,0.03,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0.03,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,0.03,0,0,0,0,
+                                  0,0,0,0,0,0,0,0,0,0.03,0,0,0,
+
+                                  0,0,0,0,0,0,0,0,0,0,0.01,0,0,
+                                  0,0,0,0,0,0,0,0,0,0,0,0.01,0,
+                                  0,0,0,0,0,0,0,0,0,0,0,0,0.02);
 
 //Ground truth callback: Fetches values from node /tf
 void tfCb(const tf2_msgs::TFMessage::ConstPtr& tf_msg)
@@ -170,18 +193,19 @@ yGT = tf_msg->transforms.at(0).transform.translation.y;
 zGT = tf_msg->transforms.at(0).transform.translation.z;
 
 //Ground truth rotation
-auto rotw = tf_msg->transforms.at(0).transform.rotation.w;
-auto rotx = tf_msg->transforms.at(0).transform.rotation.x;
-auto roty = tf_msg->transforms.at(0).transform.rotation.y;
-auto rotz = tf_msg->transforms.at(0).transform.rotation.z;
+float rotw = tf_msg->transforms.at(0).transform.rotation.w;
+float rotx = tf_msg->transforms.at(0).transform.rotation.x;
+float roty = tf_msg->transforms.at(0).transform.rotation.y;
+float rotz = tf_msg->transforms.at(0).transform.rotation.z;
 auto q = tf_msg->transforms.at(0).transform.rotation;
+float RollGT, PitchGT, YawGT;
+tie(RollGT, PitchGT, YawGT) = Quat2Euler(rotw, rotx, roty, rotz);
 double yawGT = tf::getYaw(q);
-//cout << -yawGT << ";" << endl;
-//cout << xGT << "," << yGT << "," << zGT << ";" << endl;
+//cout << xGT << "," << yGT << "," << zGT << "," << RollGT << "," << PitchGT << "," << YawGT << ";" << endl;
+//cout << RollGT << "," << PitchGT << "," << YawGT << ";" << endl;
 auto yawDiffGT = yawGT - yawprevGT;//cout << yawDiffGT << endl;//Ground truth scale
 scaleGT = sqrt(pow((xGT - xGT2),2)+pow((yGT - yGT2),2)+pow((zGT - zGT2),2));
 
-//cout << "Scale GT: " << scaleGT << endl;
 //Prints ground truth to window
 circle(trajectory, Point(yGT + dim/2,xGT + dim/2), 1, Scalar(124,252,0), 1);
 //Saves previous parameters of interest
@@ -221,39 +245,37 @@ public:
     }
 	//------------------------------------------------------------------------------------------
   //Algorithm starts here
+  std::chrono::steady_clock::time_point starttime = std::chrono::steady_clock::now();
   if(it == 1) //First frame to initialize
   {
     oldIm = cv_ptr->image; //Receive image
-		//keyp1 = shiTomasiHelp(oldIm, 2500, 0.06, 5, 3, false, 0.04);
-		//orbOdom->compute(oldIm, keyp1, desc1);
 		orbOdom->detectAndCompute(oldIm, noArray(), keyp1, desc1, false);
 		//Same with a subset of the frame if the scale recovery is wanted
 		Mat Rinit;
 		Rodrigues(Rpos, Rinit, noArray());
-		Rinit.at<double>(1,0) = 0.776686; //36
+		Rinit.at<double>(1,0) = 0.7826064; //36
 		Rodrigues(Rinit, Rpos, noArray());
 		if(scaleRecoveryMode)
 		{
 		oldImS = oldIm(cropScale);
 		//orbScale->detectAndCompute(oldImS, noArray(), keyp3, desc3, false);
-		keyp3 = shiTomasiHelp(oldImS, 2000, 0.02, 4, 3, false, 0.04);
+		keyp3 = shiTomasiHelp(oldImS, 10000, 0.01, 5, 3, false, 0.04); //knop
 		orbScale->compute(oldImS, keyp3, desc3);
 	  }
   }
+
     Im = cv_ptr->image;
-		//keyp2 = shiTomasiHelp(Im, 2500, 0.06, 5, 3, false, 0.04);
-		//orbOdom->compute(Im, keyp2, desc2);
 		orbOdom->detectAndCompute(Im, noArray(), keyp2, desc2, false);
 		if(scaleRecoveryMode)
 		{
 		ImS = oldIm(cropScale);
-		//orbScale->detectAndCompute(ImS, noArray(), keyp4, desc4, false);
-		keyp4 = shiTomasiHelp(ImS, 2000, 0.02, 4, 3, false, 0.04);
-		orbScale->compute(ImS, keyp4, desc4);
+		//orbScale->detectAndCompute(oldImS, noArray(), keyp4, desc4, false);
+    keyp4 = shiTomasiHelp(ImS, 10000, 0.01, 5, 3, false, 0.04);
+    orbScale->compute(ImS, keyp4, desc4);
 	  }
-		matchesOdom = BruteForce(oldIm, Im, keyp1, keyp2, desc1, desc2, 0.5, 1); //0.75
-		matchesScale = BruteForce(oldImS, ImS, keyp3, keyp4, desc3, desc4, 0.9, 1); //
-		if(matchesOdom.size() < 750)
+      matchesOdom = BruteForce(oldIm, Im, keyp1, keyp2, desc1, desc2, 0.75, 1); //0.75
+      matchesScale = BruteForce(oldImS, ImS, keyp3, keyp4, desc3, desc4, 0.9, 1); //0.99
+		if(matchesOdom.size() < 10000)
     //if(keyp1.size() > 6 || keyp2.size() > 6) //Segmentation fault if detected features are lower than 5
     {
 		//For triangulation, the matching 2D-correspondences from both frames are collected
@@ -261,31 +283,70 @@ public:
 		tie(scene3, scene4) = getPixLoc(keyp3, keyp4, matchesScale);
 		//Initial epipolar geometry between the 2 current frames
     tie(t,R) = getInitPose(keyp1, keyp2, matchesOdom, K);
-		Rodrigues(R, r, noArray());
-		  if(it == 3)
-			//if(it > 2)
+		Rodrigues(R, r, noArray()); //knop
+
+      //if(it == 10)
+			if(it > 2)
 			{
 				tie(P1, P2) = projMatrices(Kscale, R, t);
 				cv::triangulatePoints(P1, P2, scene3, scene4, pnts3D);
 				Xground = dim4to3(pnts3D);
-				tie(Xground, scene5, scene6) = siftError(P2, Xground, scene3, scene4, 5000);
-				tie(Xground, sift1, sift2) = siftPoints(Xground, P2, scene5, scene6, 15, false);
+        //inliers(Xground, 10);
+        vector<size_t> inlierIndex;
+        //knop
+				tie(Xground, scene5, scene6) = siftError(P2, Xground, scene3, scene4, 3500); //2500
+/*
+      	bool stat1, stat2, stat3;
+      	arma::mat data(1, Xground.size(), arma::fill::zeros);
+      	for(int i = 0; i < Xground.size(); i++){data(0,i) = Xground[i].y;}
+        if(!GMMtraining)
+        {
+          GMMtraining = 1;
+          stat1 = model1.learn(data, 1, arma::eucl_dist, arma::random_subset, 10, 5, 1e-10, false);
+          stat2 = model2.learn(data, 2, arma::eucl_dist, arma::random_subset, 10, 5, 1e-10, false);
+          stat3 = model3.learn(data, 3, arma::eucl_dist, arma::random_subset, 10, 5, 1e-10, false);
+        }
+        else
+        {
+          std::chrono::steady_clock::time_point starttime = std::chrono::steady_clock::now();
+          stat1 = model1.learn(data, 1, arma::eucl_dist, arma::keep_existing, 10, 5, 1e-10, false);
+          stat2 = model2.learn(data, 2, arma::eucl_dist, arma::keep_existing, 10, 5, 1e-10, false);
+          stat3 = model3.learn(data, 3, arma::eucl_dist, arma::keep_existing, 10, 5, 1e-10, false);
+          std::chrono::steady_clock::time_point endtime = std::chrono::steady_clock::now();
+          //cout << Xground.size() << "," << std::chrono::duration_cast<std::chrono::microseconds>(endtime - starttime).count() << ";" << endl;
+        }
+*/
+
+				tie(Xground, sift1, sift2, inlierIndex) = siftPoints(Xground, P2, scene5, scene6, 300, false);
+
+        //if(it > 2 && it % 10 == 0)
+        if(it > 2)
+        {
+          Mat InlierIm = oldIm.clone();
+          showInliersOutliers(inlierIndex, scene6, InlierIm, xOff, yOff, it);
+        }
 				if(sift1.size() > 5)
 				{
+        double acceptratio;
 				vector <double> heights;
-				tie(hprim, normalVec, heights) = generateHeights(Xground, 1.65, 10, 300);
-				double bin = binom(sift1.size(), 3);
-				acceptratio = heights.size()/bin;
-        cout << "Scale: " << camHeight/hprim << endl;
-        cout << "Scale: " << scaleGT << endl;
-				if(acceptratio > 0.65){s = camHeight/hprim;}
-				else{s = prevScale;}
+				tie(hprim, normalVec, heights, acceptratio, mup, sig) = generateHeights(Xground, 1.65, 10, 100);
+        if(!isnan(hprim) && hprim > 0.1){s = camHeight/hprim;}
 				}
+        //cout << "Acceptratio: " << acceptratio << endl;
+        //cout << s << ";" << endl;
+        //cout << abs(s-scaleGT) << ";" << endl;
+        //cout << endl;
+        //cout << acceptratio << "," << abs(s-scaleGT) << "," << s << ";" << endl;
+				//if(acceptratio > 0.6){s = camHeight/hprim;}
+				//else{s = prevScale;}
+        //cout << sig << "," << mup << "," << hprim << ";" << endl;
 		  }
 		Rodrigues(Rpos, rot, noArray()); 			//Converts rotation matrix to rotation vector
 		Rodrigues(R, r, noArray());			      //Same as above but with the
 		yawDiff = r.at<double>(1,0);
 		yaw = rot.at<double>(1,0); 						//Yaw for publishing odom message
+		roll = rot.at<double>(0,0);
+		pitch = rot.at<double>(2,0);
 		if(R.rows == 3 && R.cols == 3 && t.rows == 3 && t.cols == 1 && abs(yawDiff*180/3.14159) < 30)
 		{
 		if(scaleRecoveryMode && it > 2){tpos = tpos + Rpos*t*s;}//The scaled estimate is updated here
@@ -302,24 +363,48 @@ public:
 		y =  -tpos.at<double>(0,0);
 		z =  -tpos.at<double>(0,1);
 		Mat Pos = c2w*tpos;
-		Mat V = c2w*Rpos*t*s/dt;
+		Mat V = c2w*t*s/dt;
 		Mat Quat = rot2Quat(c2w*rot);
-		Mat W = c2w*R/dt;
-		//cout << Quat << endl;
-		//tie(xhat, Pkk) = EKF_3D(Pos, xhat, dt, Qk, Rk, Pkk);
-    //px = xhat.at<double>(0,0);
-    //py = xhat.at<double>(0,1);
+		Mat W = c2w*r/dt;
+    Mat meas = (Mat_<double>(6,1) << V.at<double>(0,0),V.at<double>(0,1),V.at<double>(0,2), W.at<double>(0,0),W.at<double>(0,1),W.at<double>(0,2));
+    //cout << x << "," << y << "," << z << "," << pitch << "," << roll << "," << yaw << ";" << endl;
+		//cout << meas.t() << endl;
+    cout << V.at<double>(0,0) << "," << V.at<double>(0,1) << "," << V.at<double>(0,2) << "," << W.at<double>(0,0) << "," << W.at<double>(0,1) << "," << W.at<double>(0,2) << ";" << endl;
+	  vector<float> states;
+		tie(xhat, Pkk, states) = EKF_3D(meas, xhat, dt, Qk, Rk, Pkk);
+    px = xhat.at<double>(0,0);
+    py = xhat.at<double>(0,1);
+    vx = xhat.at<double>(0,3);
+    vy = xhat.at<double>(0,4);
+    vz = xhat.at<double>(0,5);
+    //Mat Quater = (Mat_<double>(4,1) << xhat.at<float>(0,6),xhat.at<float>(0,7),xhat.at<float>(0,8),xhat.at<float>(0,9));
+    if(it > 2)
+    {
+      //cout << xhat.at<double>(0,6) << " " << xhat.at<double>(0,7) << " " << xhat.at<double>(0,8) << " " << xhat.at<double>(0,9) << endl;
+      tie(rollEKF,pitchEKF,yawEKF) = Quat2Euler( xhat.at<double>(0,6),  xhat.at<double>(0,7),  xhat.at<double>(0,8),  xhat.at<double>(0,9));
+      //cout << yawEKF << endl;
+      //cout << s << "," << sqrt(pow(vx,2) + pow(vy,2) + pow(vz,2))/10 << "," << scaleGT << ";" << endl;
+      //double yawEKF = tf::getYaw(Quater);
+      //cout << yawEKF << "," << yawGT << endl;
+      //cout << Quater << endl;
+      ErrScale = ErrScale + (s - scaleGT);
+      //errFilt = errFilt + (sqrt(pow(vx,2) + pow(vy,2) + pow(vz,2))/10 - scaleGT);
+      iters++;
+      //cout << "Avg scale error: " << ErrScale/iters << endl;
+      //cout << "Avg filt error: " << errFilt/iters << endl;
+      //cout << "Accum scale error: " << ErrScale << endl;
+      //cout << "Acc filt error: " << errFilt << endl;
+      //cout << endl;
+    }
+
     //cout << "x: " << x << " y: " << y << " z: " << z << endl;
+    //cout << xGT << "," << yGT << "," << zGT << ";" << endl;
     //cout << "X: " << px << " Y: " << py << " Z: " << xhat.at<double>(0,2) << endl;
     //cout << "x: " << xGT << " y: " << yGT << " z: " << zGT << endl;
 		//cout << endl;
 	  }
-
-		//cout << xGT << "," << yGT << "," << zGT << ";" << endl;
-		//Mat meas = c2w*tpos;
-		//cout << meas << endl;
 		circle(trajectory, Point(X + dim/2,-Y + dim/2), 1, Scalar(0,0,255), 1);
-		//circle(trajectory, Point(py + dim/2,px + dim/2), 1, Scalar(255,165,0), 1);
+		circle(trajectory, Point(py + dim/2,px + dim/2), 1, Scalar(255,165,0), 1);
     cv::resize(trajectory, traj, cv::Size(), showScale, showScale);
     imshow("Trajectory", traj);
 		//Copying previous parameters such as keypoints, descriptors etc
@@ -334,6 +419,10 @@ public:
 		tprev = t.clone();
 		prevScale = s;
     it++; //Iteration number
+    std::chrono::steady_clock::time_point endtime = std::chrono::steady_clock::now();
+    //std::cout << "Calc time [ms]: " << std::chrono::duration_cast<std::chrono::milliseconds>(endtime - starttime).count() << std::endl;
+    timest = timest + std::chrono::duration_cast<std::chrono::milliseconds>(endtime - starttime).count();
+    //cout << "Avg est time: " << timest/it << endl;
     //------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
     cv::waitKey(1);

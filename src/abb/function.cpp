@@ -26,9 +26,9 @@ for (size_t i = 0; i < matches.size(); i++)
 }
 //Draw matches
 Mat img_matches,img_matches_good;
-drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good, Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-cv::resize(img_matches_good, img_matches_good, cv::Size(), 2, 2);
-imshow("Good Matches", img_matches_good);
+//drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good, Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+//cv::resize(img_matches_good, img_matches_good, cv::Size(), 2, 2);
+//imshow("Good Matches", img_matches_good);
 }
 	return {good_matches};
 }
@@ -43,7 +43,6 @@ vector<DMatch> Brute(Mat img1, Mat img2, vector<KeyPoint> keyp1, vector<KeyPoint
 	    desc2.convertTo(desc2, CV_32F);
 			//cout << "Converting to CV_32F" << endl;
 	}
-
 	Ptr<BFMatcher> matcher = BFMatcher::create(NORM_L2, false);
 	vector<vector<DMatch>> matches;
 	vector<DMatch> good_matches;
@@ -61,9 +60,9 @@ for (size_t i = 0; i < matches.size(); i++)
 }
 //Draw matches
 Mat img_matches,img_matches_good;
-drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good, Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-cv::resize(img_matches_good, img_matches_good, cv::Size(), 1, 1);
-imshow("Good Matches", img_matches_good);
+//drawMatches(img1, keyp1, img2, keyp2, good_matches, img_matches_good, Scalar::all(-1), Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+//cv::resize(img_matches_good, img_matches_good, cv::Size(), 1, 1);
+//imshow("Good Matches", img_matches_good);
 }
 	return {good_matches};
 }
@@ -77,18 +76,16 @@ if (matches.size() > 5) { //5-point algorithm won't work with less
 for( size_t i = 0; i < matches.size(); i++)
 {
 		//Retrieve the Pixel locations from the good matches
-		scene1.push_back( keyp1[ matches[i].queryIdx ].pt);
-		scene2.push_back( keyp2[ matches[i].trainIdx ].pt);
+		scene1.push_back(keyp1[matches[i].queryIdx].pt);
+		scene2.push_back(keyp2[matches[i].trainIdx].pt);
 }
-
 //Estimating the epipolar geometry between the 2 frames with a RANSAC scheme
-Em = findEssentialMat(scene2, scene1, cam, RANSAC, 0.99, 1);
+Em = findEssentialMat(scene2, scene1, cam, RANSAC, 0.994, 1);
 recoverPose(Em, scene2, scene1, cam, Rm, t, noArray());
 }
 return {t,Rm};
 }
-
-//Not currently used in this subset
+//Not currently used in this subset.
 //Bucketing: Divides frame into a nxm grid, detects features in each subset
 //I.e. evenly distributes the keypoints more evenly
 vector<KeyPoint> Bucketing(Mat img, int gridX, int gridY, int max)
@@ -270,11 +267,53 @@ else
 	}
 }
 
+void inliers(vector<Point3d> X, int order)
+{
+	int N = X.size();
+	bool stat, statk;
+	double aic,aicc,bic;
+	vector<double>timevec, yVal;
+	arma::gmm_diag model;
+	arma::gmm_diag mod;
+
+	//arma::mat means(1, 3, arma::fill::zeros);
+	//mod.set_means(means);
+
+	arma::mat data(1, N, arma::fill::zeros);
+	for(int i = 1; i <= order; i++){data(0,i) = X[i].y;}
+	for(int k = 1; k <= order; k++)
+	{
+	std::chrono::steady_clock::time_point starttime = std::chrono::steady_clock::now();
+	statk = model.learn(data, k, arma::eucl_dist, arma::random_subset, 10, 5, 1e-10, false);
+	std::chrono::steady_clock::time_point endtime = std::chrono::steady_clock::now();
+	cout << std::chrono::duration_cast<std::chrono::microseconds>(endtime - starttime).count() << endl;
+
+	std::chrono::steady_clock::time_point startt = std::chrono::steady_clock::now();
+	stat = model.learn(data, k, arma::eucl_dist, arma::keep_existing, 10, 5, 1e-10, false);
+	std::chrono::steady_clock::time_point endt = std::chrono::steady_clock::now();
+	cout << std::chrono::duration_cast<std::chrono::microseconds>(endt - startt).count() << endl;
+	cout << endl;
+	if(stat)
+	{
+		vector<double> means;
+		for(int i = 0; i < k; i++){means.push_back(model.means(i));}
+		auto it = minmax_element(begin(means), end(means));
+		int min_idx = std::distance(means.begin(), it.first);
+		sort(means.begin(), means.end());
+		aic = 2*k - 2*model.sum_log_p(data);
+		aicc = aic + (2*k*(k + 1))/(N - k - 1);
+		bic = k*log(N) - 2*model.sum_log_p(data);
+	}
+}
+}
+
 //knop
 	tuple<vector<size_t>, vector<double>> inlierLikelihood(vector<double> yVal, double maxLH)
 	{
-		double bic1, bic2, bic3;
-		//double aic1, aic2, aic3;
+		double minimumweight = 0.1;
+		double minw = 1;
+		double w21,w22,w31,w32,w33;
+		double bic1, bic2, bic3,aic1, aic2, aic3, aicc1, aicc2, aicc3;
 		bool status, status2, status3;
 		int order = 1;
 		double pi = 3.14159;
@@ -285,20 +324,21 @@ else
 		int N = yVal.size();
  		arma::gmm_diag model;
 		arma::mat data(1, yVal.size(), arma::fill::zeros);
-
+		int k;
 		for(int i = 0; i < yVal.size(); i++)
 		{
 			data(0,i) = yVal[i];
-			//cout << yVal[i] << ";" << endl;
+			//cout << yVal[i] << ";" << endl; //knop
 		}
-		//cout << "Size: " << yVal.size() << endl;
-		if(yVal.size() > 4)
+		if(yVal.size() > 10)
 		{
 			status = model.learn(data, 1, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
 			if(status)
 			{
-				//aic1 = 2 - 2*model.sum_log_p(data);
-				bic1 = log(N) - 2*model.sum_log_p(data);
+				k = 1;
+				aic1 = 2*k - 2*model.sum_log_p(data);
+				aicc1 = aic1 + (2*k*(k + 1))/(N - k - 1);
+				bic1 = k*log(N) - 2*model.sum_log_p(data);
 				if(bic1 < minScore)
 				{
 					minScore = bic1;
@@ -307,6 +347,7 @@ else
 		status2 = model.learn(data, 2, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
 		if(status2)
 		{
+			k = 2;
 			double mean0 = model.means(0);
 			double mean1 = model.means(1);
 			vector<double> means;
@@ -314,20 +355,22 @@ else
 			means.push_back(mean1);
 			auto it = minmax_element(begin(means), end(means));
 			int min_idx = std::distance(means.begin(), it.first);
-			//aic2 = 4 - 2*model.sum_log_p(data);
-			bic2 = 2*log(N) - 2*model.sum_log_p(data);
-			if(bic2 < minScore)
+			minw = model.hefts(min_idx);
+			aic2 = 2*k - 2*model.sum_log_p(data);
+			aicc2 = aic2 + (2*k*(k + 1))/(N - k - 1);
+			bic2 = k*log(N) - 2*model.sum_log_p(data);
+			if(bic2 < minScore && minw > minimumweight)
 			{
 				minScore = bic2;
 				order = 2;
-				//cout << "Changing model to 2" << endl;
-				//mu = model.means[min_idx];
-				//sigma = sqrt(model.dcovs[min_idx]);
+				mu = model.means[min_idx];
+				sigma = sqrt(model.dcovs[min_idx]);
 			}
 		}
 		status3 = model.learn(data, 3, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
 		if(status3)
 		{
+			k = 3;
 			double mean0 = model.means(0);
 			double mean1 = model.means(1);
 			double mean2 = model.means(2);
@@ -338,31 +381,81 @@ else
 			auto it = minmax_element(begin(means), end(means));
 			int min_idx = std::distance(means.begin(), it.first);
 			sort(means.begin(), means.end());
+			minw = model.hefts(min_idx);
 			mean0 = means[0];
 			mean1 = means[1];
 			mean2 = means[2];
-			//aic3 = 6 - 2*model.sum_log_p(data);
-			bic3 = 3*log(N) - 2*model.sum_log_p(data);
-			if(bic3 < minScore)
+			aic3 = 2*k - 2*model.sum_log_p(data);
+			aicc3 = aic3 + (2*k*(k + 1))/(N - k - 1);
+			bic3 = k*log(N) - 2*model.sum_log_p(data);
+			if(bic3 < minScore && minw > minimumweight)
 			{
 			order = 3;
-			//cout << "Changing model to 3" << endl;
-			//mu = model.means[min_idx];
-			//sigma = sqrt(model.dcovs[min_idx]);
+			mu = model.means[min_idx];
+			sigma = sqrt(model.dcovs[min_idx]);
 		  }
 			}
-			cout << "Bic: " << bic1 << " " << bic2 << " " << bic3 << endl;
-			//cout << "Aic: " << aic1 << " " << aic2 << " " << aic3 << endl;
-			//cout << "Order: " << order << endl;
-			//cout << endl;
 			}
+/*
+			bool stat,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9,stat10;
+			double aic,aicc,bic;
+			vector<double> aicvec, aiccvec, bicvec, minwvec, timevec;
+			for(int k = 1; k < 11; k++)
+			{
+			std::chrono::steady_clock::time_point starttime = std::chrono::steady_clock::now();
+			stat = model.learn(data, k, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
+			std::chrono::steady_clock::time_point endtime = std::chrono::steady_clock::now();
+			timevec.push_back(std::chrono::duration_cast<std::chrono::microseconds>(endtime - starttime).count());
+			cout << std::chrono::duration_cast<std::chrono::microseconds>(endtime - starttime).count() << endl;
+			if(stat)
+			{
+				vector<double> means;
+				for(int i = 0; i < k; i++){means.push_back(model.means(i));}
+				auto it = minmax_element(begin(means), end(means));
+				int min_idx = std::distance(means.begin(), it.first);
+				sort(means.begin(), means.end());
+				minw = model.hefts(min_idx);
+				aic = 2*k - 2*model.sum_log_p(data);
+				aicc = aic + (2*k*(k + 1))/(N - k - 1);
+				bic = k*log(N) - 2*model.sum_log_p(data);
+				minwvec.push_back(minw);
+				aicvec.push_back(aic);
+				aiccvec.push_back(aicc);
+				bicvec.push_back(bic);
+			}
+			}
+/*
+			cout << "Min w:";
+			for(int j = 0; j < 10; j++){cout << minwvec.at(j) << ", ";}
+			cout << endl;
+			cout << "Aic:";
+			for(int j = 0; j < 10; j++){cout << aicvec.at(j) << ", ";}
+			cout << endl;
+			cout << "Aicc:";
+			for(int j = 0; j < 10; j++){cout << aiccvec.at(j) << ", ";}
+			cout << endl;
+			cout << "Bic:";
+			for(int j = 0; j < 10; j++){cout << bicvec.at(j) << ", ";}
+			cout << endl;
 
-	double z1 = -0.67;
+/*	arma::mat meanss;
+	std::chrono::steady_clock::time_point starttime = std::chrono::steady_clock::now();
+	bool sta1 = kmeans(meanss, data, 1, arma::random_subset, 10, false);
+	bool sta2 = kmeans(meanss, data, 2, arma::random_subset, 10, false);
+	bool sta3 = kmeans(meanss, data, 3, arma::random_subset, 10, false);
+	std::chrono::steady_clock::time_point endtime = std::chrono::steady_clock::now();
+	cout << std::chrono::duration_cast<std::chrono::microseconds>(endtime - starttime).count() << endl;
+
+	std::chrono::steady_clock::time_point starttime1 = std::chrono::steady_clock::now();
+	bool sta4 = model.learn(data, 1, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
+	bool sta5 = model.learn(data, 2, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
+	bool sta6 = model.learn(data, 3, arma::maha_dist, arma::random_subset, 10, 5, 1e-10, false);
+	std::chrono::steady_clock::time_point endtime1 = std::chrono::steady_clock::now();
+	cout << std::chrono::duration_cast<std::chrono::microseconds>(endtime1 - starttime1).count() << endl; */
+	double z1 = -0.67;//-0.67
 	double z3 =  -z1;
 	double Q1 = sigma*z1 + mu;
 	double Q3 = sigma*z3 + mu;
-	//cout << "Mean: " << mu << " Q1: " << Q1 << " Q3: " << Q3 << endl;
-	//cout << "Points size: " << N << endl;
 	double lh;
 	vector<size_t> index;
 	vector<double> lhoods;
@@ -375,7 +468,7 @@ else
 			index.push_back(i);
 		}
 	}
-
+	//cout << index.size() << endl;
 	stable_sort(index.begin(), index.end(), [&lhoods](size_t i1, size_t i2) {return lhoods[i1] > lhoods[i2];});
 
 	vector<double> likelihoods;
@@ -391,12 +484,13 @@ else
 	return {index, likelihoods};
 }
 // Sifts out abnormaly large triangulated 3D-points and their 2D-point correspondences
-tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>> siftPoints(vector<Point3d> X3D, Mat proj, vector<Point2d> scene1, vector<Point2d> scene2, int maxPoints, bool show)
+tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>,vector<size_t>> siftPoints(vector<Point3d> X3D, Mat proj, vector<Point2d> scene1, vector<Point2d> scene2, int maxPoints, bool show)
 {
 vector<double> yVal;
 vector<Point2d> sort1, sort2;
 vector<Point3d> coordsSifted;
 double Ys;
+
 for(int i = 0; i < X3D.size(); i++)
 {
 		Ys = X3D[i].y;
@@ -406,7 +500,9 @@ for(int i = 0; i < X3D.size(); i++)
 }
 vector<size_t> index;
 vector<double> likelihoods;
+
 tie(index,likelihoods) = inlierLikelihood(yVal, 0.8);
+//cout << endl;
 //
 //// Viz: Displays 3D-points, for frame analysis
 //
@@ -433,15 +529,52 @@ for(int n = 0; n < maxPoints; n++)
 	sort1.push_back(scene1[index[n]]);
 	sort2.push_back(scene2[index[n]]);
 	coordsSifted.push_back(X3D[index[n]]);
-	cout << X3D[index[n]].y << endl;
+	//cout << X3D[index[n]].y << endl;
+}
+return{coordsSifted, sort1, sort2, index};
+}
+
+void showInliersOutliers(vector<size_t> index, vector<Point2d> scene, Mat Image, int xOffset, int yOffset, int iteration)
+{
+	int X,Y, Xend, Yend, sizeX, sizeY;
+	//cout << "Index size: " << index.size() << endl;
+	//cout << "Scene size: " << scene.size() << endl;
+	std::vector<int> inliers(scene.size(), 0);
+	for(int n = 0; n < index.size(); n++)
 	{
+		//cout << index[n] << endl;
+		inliers[index[n]] = 1;
 	}
+	for(int i = 0; i < scene.size(); i++)
+	{
+		X = scene[i].x + xOffset;
+		Y = scene[i].y + yOffset;
+		if(inliers[i])
+		{
+			circle(Image, Point(X,Y), 1, Scalar(124,252,0), 2);
+		}
+		else
+		{
+			//circle(Image, Point(X,Y), 1, Scalar(124,252,0), 2);
+			circle(Image, Point(X,Y), 1, Scalar(0,0,255), 2);
+		}
+	}
+/*
+	string text = "Frame nr: ";
+	text += std::to_string(iteration);
+	cv::putText(Image, //target image
+            text, //text
+            //cv::Point(20, 20), //top-left position
+						cv::Point(600, 250), //top-left position
+            cv::FONT_HERSHEY_DUPLEX,
+            0.5,
+            CV_RGB(0,0,0), //font color
+            1); */
+	rectangle(Image, Point(xOffset,yOffset), Point(Image.cols - xOffset,Image.rows), Scalar(220,220,220), LINE_4, LINE_4);
+	imshow("Inliers", Image);
 }
 
-return{coordsSifted, sort1, sort2};
-}
-
-tuple<Mat, Mat>projMatrices(Mat cam, Mat Rota, Mat tran)
+tuple<Mat, Mat> projMatrices(Mat cam, Mat Rota, Mat tran)
 {
 	Mat M = (Mat_<double>(3,4) << 1.0, 0.0, 0.0, 0.0,
 																0.0, 1.0, 0.0, 0.0,
@@ -530,6 +663,10 @@ int binom(int n, int k)
 {
    if (k == 0 || k == n)
    return 1;
+	 else if (n == 0)
+	 return 0;
+	 else if (n == 0 && k == 0)
+	 return 1;
    return binom(n - 1, k - 1) + binom(n - 1, k);
 }
 
@@ -668,58 +805,75 @@ tuple <Mat, Mat> EKF(double x, double y, double vel, double yaw, double omega, d
 	return {Xup, Pkk};
 }
 
-tuple <double, Mat, vector<double>> generateHeights(vector<Point3d> X, double realH, double maxScale, int maxIter)
+tuple <double, Mat, vector<double>, double, double, double> generateHeights(vector<Point3d> X, double realH, double maxScale, int maxIter)
 {
 Mat normVec = (Mat_<double>(1,3) << 0,1,0);
 vector<Point3d> normal;
 Mat point, N, N_norm;
 Mat n = cv::Mat::zeros(3,3,CV_64F);
 Mat l = cv::Mat::ones(3,1,CV_64F);
-double norm, height, n1, n2, n3;
+double norm, height, n1, n2, n3, acceptratio;
 vector<double> heights;
 vector <vector <int>> bin;
-
-bin = combList(X.size(), 3); //Combination list of sizeof(X) choose 3 numbers
-std::vector<int> myvector;
-for(int i = 0; i < bin.size(); ++i){myvector.push_back(i);}
-std::random_shuffle(myvector.begin(),myvector.end());
-
-if(maxIter > bin.size()){maxIter = bin.size();}
-
+acceptratio = 0;
+//bin = combList(X.size(), 3); //Combination list of sizeof(X) choose 3 numbers
+//std::vector<int> myvector;
+//for(int i = 0; i < bin.size(); ++i){myvector.push_back(i);}
+//std::random_shuffle(myvector.begin(),myvector.end());
+//if(maxIter > bin.size()){maxIter = bin.size();}
+//std::chrono::steady_clock::time_point starttime = std::chrono::steady_clock::now();
+//std::chrono::steady_clock::time_point endtime = std::chrono::steady_clock::now();
+//std::cout << "Calc time: " << std::chrono::duration_cast<std::chrono::microseconds>(endtime - starttime).count() << std::endl;
+vector <int> rand3;
 if(X.size() > 2)
 {
 int u = 0;
 for(int i = 0; i < maxIter; i++)
 {
+	rand3 = randList(3,X.size());
 for(int j = 0; j < 3; j++)
 {
-	n.at<double>(j,0) = X[bin[myvector[i]][j]].x;
-	n.at<double>(j,1) = X[bin[myvector[i]][j]].y;
-	n.at<double>(j,2) = X[bin[myvector[i]][j]].z;
+	//n.at<double>(j,0) = X[bin[myvector[i]][j]].x;
+	//n.at<double>(j,1) = X[bin[myvector[i]][j]].y;
+	//n.at<double>(j,2) = X[bin[myvector[i]][j]].z;
+	n.at<double>(j,0) = X[rand3.at(j)].x;
+	n.at<double>(j,1) = X[rand3.at(j)].y;
+	n.at<double>(j,2) = X[rand3.at(j)].z;
 }
 N = n.inv()*l;
 norm = sqrt(pow(N.at<double>(0,0), 2) + pow(N.at<double>(1,0), 2) + pow(N.at<double>(2,0), 2));
 N_norm = N/norm;
-height = 1/norm;
-n1 = N_norm.at<double>(0,0);
 n2 = N_norm.at<double>(1,0);
-n3 = N_norm.at<double>(2,0);
+height = 1/norm;
 //imp
-if(n2 < -0.95)
+if(n2 < -0.995)
 {
+n1 = N_norm.at<double>(0,0);
+n3 = N_norm.at<double>(2,0);
 normal.push_back({n1,n2,n3});
 heights.push_back(height);
-//cout << 1.65/height << ";" << endl;
+//cout << height << ";" << endl;
 u++;
 }
 }
 }
+
+double mup = avg(heights);
+double var = variance(heights, mup);
+double sig = sqrt(var);
+
 if(heights.size() > 5)
 {
-double average = avg(heights);
+//double average = avg(heights);
 int index;
 double h;
 tie(h,index) = qScore(heights);
+
+//cout << sig << "," << mup << "," << h << ";" << endl;
+acceptratio = heights.size()/(double)maxIter;
+//cout << "Acceptratio: " << heights.size()/(double)maxIter << endl;
+//cout << "Estimated height: " << h << endl;
+//cout << "Estimated scale: " << 1.65/h << endl;
 n1 = normal[index].x;
 n2 = normal[index].y;
 n3 = normal[index].z;
@@ -727,11 +881,10 @@ Mat normVec = (Mat_<double>(1,3) << n1,n2,n3);
 //cout << "Best normal estimate: " << normal[index] << endl;
 //cout << "Size: " << heights.size() << endl;
 //cout << heights[index] << endl;
-//medianAvg(heights);
-//cout << "Average: " << average << endl;
-return {h, normVec, heights};
+return {h, normVec, heights, acceptratio, mup, sig};
 }
-return {0.1, normVec, heights};
+//cout << sig << "," << mup << "," << mup << ";" << endl;
+return {mup, normVec, heights, acceptratio, mup, sig};
 }
 
 void testHomog(vector<double> hestimates, vector<Point2d> scene2, Mat cam, vector<Point3d> Xground)
@@ -845,7 +998,7 @@ void PermGenerator(int n, int k)
         {
             cout << d[i] << " ";
         }
-        cout << endl;
+        //cout << endl;
         std::reverse(d.begin()+k,d.end());
     } while (next_permutation(d.begin(),d.end()));
 }
@@ -990,6 +1143,22 @@ phi = atan(ny/nx);
 cout << sin(theta)*cos(phi) << " " << sin(theta)*sin(phi) << " " << cos(theta) << endl;
 }
 
+tuple<float,float,float> Quat2Euler(float q0, float q1, float q2, float q3)
+{
+	double roll, pitch, yaw;
+	Mat RotVector;
+	Mat RotMat = (Mat_<double>(3,3) <<  q0*q0+q1*q1-q2*q2-q3*q3, 2*(q1*q2 - q0*q3), 2*(q0*q2 + q1*q3),
+																	 		2*(q0*q3 + q1*q2), q0*q0-q1*q1+q2*q2-q3*q3, 2*(-q0*q1 + q2*q3),
+																	 		2*(-q0*q2 + q1*q3), 2*(q2*q3 + q0*q1), q0*q0-q1*q1-q2*q2+q3*q3);
+	Rodrigues(RotMat, RotVector, noArray());
+	roll = RotVector.at<double>(0,0);
+	pitch = RotVector.at<double>(1,0);
+	yaw = RotVector.at<double>(2,0);
+	//roll = atan(2*(q0*q1 + q2*q3)/(1 - 2*(q1*q1 + q2*q2)));
+	//pitch = asin(2*(q0*q2 - q3*q1));
+	//yaw = atan(2*(q0*q3 + q1*q2)/(1 - 2*(q2*q2 + q3*q3)));
+	return {roll, pitch, yaw};
+}
 
 Mat rot2Quat(Mat rotvec)
 {
@@ -1109,3 +1278,89 @@ tuple <Mat, Mat> refinePose(Mat cam, vector<Point2d> pt1, vector<Point2d> pt2, M
 	Mat Pk = projMat(K,newR,tlm);
 	cv::triangulatePoints(Pk_1, Pk, scene1, scene2, pointX); */
 }
+
+
+int ran(int min, int max)
+{
+    std::random_device r;
+    std::mt19937 gen(r());
+    std::uniform_int_distribution<> dis(min, max);
+    return dis(gen);
+}
+
+int randnr(int min, int max)
+{
+    std::random_device r;
+    std::mt19937 gen(r());
+    std::uniform_int_distribution<> dis(min, max);
+    return dis(gen);
+}
+
+vector<int> randList(int listsize, int max)
+{
+    const int min = 1;        // min random number
+    vector<int> vec;
+    while(vec.size() != listsize)
+	  {
+			//vec.push_back(randnr(min, max));
+			std::random_device r;
+	    std::mt19937 gen(r());
+	    std::uniform_int_distribution<> dis(min, max);
+      vec.emplace_back(dis(gen)); // create new random number
+      std::sort(begin(vec), end(vec)); // sort before call to unique
+      auto last = std::unique(begin(vec), end(vec));
+      vec.erase(last, end(vec));       // erase duplicates
+    }
+    //std::random_shuffle(begin(vec), end(vec)); // mix up the sequence
+		return vec;
+}
+
+vector<int> kthCombination(int n, int k, int m)
+{
+	vector<int> result;
+	int a = n; //4
+	int b = k; //2
+	int x = (binom(n, k) - 1) - m; //3
+	for(int i = 0; i < k; i++)
+	{
+		a = a - 1;
+		while(binom(a,b) > x)
+		{
+			a = a - 1;
+		}
+			result.push_back(n - 1 - a);
+			//cout << n - a << ",";
+			x = x - binom(a, b);
+			b = b - 1;
+	}
+	 //cout << endl;
+	 return result;
+}
+
+void test()
+{
+	vector<int> list, randnumbs;
+	std::chrono::steady_clock::time_point starttime = std::chrono::steady_clock::now();
+	for(int j = 0; j < 100; j++)
+	{
+	randnumbs = randList(3,300);
+	for(int i = 0; i < 3; i++)
+	{
+		//cout << randnumbs.at(i) << " ";
+	}
+	//cout << endl;
+	}
+	std::chrono::steady_clock::time_point endtime = std::chrono::steady_clock::now();
+	std::cout << std::chrono::duration_cast<std::chrono::microseconds>(endtime - starttime).count() << ";" << std::endl;
+	for(int i = 0; i < randnumbs.size(); i++)
+	{
+		//cout << randnumbs.at(i) << " ";
+	}
+	//cout << endl;
+}
+
+
+
+
+
+//

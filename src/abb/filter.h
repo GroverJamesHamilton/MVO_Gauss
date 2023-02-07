@@ -23,7 +23,6 @@
 using namespace cv;
 using namespace std;
 
-tuple <Mat, Mat> EKF_filt(Mat Xmeas, Mat xhat, Mat Pk_1k_1, Mat Qk, Mat Rk);
-tuple <Mat, Mat> EKF_3D(Mat meas, Mat xhat, double t, Mat Qk, Mat Rk, Mat Pk_1k_1);
+tuple <Mat, Mat, vector<float>> EKF_3D(Mat Zvw, Mat xhat, double t, Mat Qk, Mat Rk, Mat Pk_1k_1);
 
 #endif

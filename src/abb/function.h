@@ -40,7 +40,8 @@ double variance(vector<double> v,double mean);
 double avgMatchDist(vector<DMatch> matches);
 double correctTimeDivide(double timeDiff, double sampleTime);
 Mat projMat(Mat cam, Mat rota, Mat t);
-tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>> siftPoints(vector<Point3d> X3D, Mat proj, vector<Point2d> scene1, vector<Point2d> scene2, int maxPoints, bool show);
+tuple <vector<Point3d>,vector<Point2d>,vector<Point2d>,vector<size_t>> siftPoints(vector<Point3d> X3D, Mat proj, vector<Point2d> scene1, vector<Point2d> scene2, int maxPoints, bool show);
+void showInliersOutliers(vector<size_t> index, vector<Point2d> scene, Mat Image, int xOffset, int yOffset, int iteration);
 void disp(Mat Xg);
 int binom(int n, int k);
 tuple <double, int> qScore(vector <double> heights);
@@ -57,7 +58,7 @@ void PermGenerator(int n, int k);
 tuple<Mat, Mat>projMatrices(Mat cam, Mat Rota, Mat tran);
 tuple<vector<Point3d>,vector<Point2d>,vector<Point2d>> siftError(Mat proj, vector<Point3d> Xtriang, vector<Point2d> scene1, vector<Point2d> scene2, int maxError);
 vector <vector <int>> combList(int n, int k);
-tuple <double, Mat, vector<double>> generateHeights(vector<Point3d> X, double realH, double maxScale, int maxIter);
+tuple <double, Mat, vector<double>, double, double, double> generateHeights(vector<Point3d> X, double realH, double maxScale, int maxIter);
 void testHomog(vector<double> hestimates, vector<Point2d> scene2, Mat cam, vector<Point3d> Xground);
 vector<KeyPoint> shiTomasiHelp(Mat img,
 															 int maxCorners,
@@ -71,4 +72,10 @@ void dispProjError(Mat Proj, vector<Point2d> pt2, vector<Point3d> p3d);
 tuple <Mat, Mat> refinePose(Mat cam, vector<Point2d> pt1, vector<Point2d> pt2, Mat Rt, Mat tt);
 Mat normalizeVec(Mat tvec);
 Mat rot2Quat(Mat rotvec);
+tuple<float,float,float> Quat2Euler(float q0, float q1, float q2, float q3);
+vector<int> kthCombination(int n, int k, int m);
+void test();
+int randnr(int min, int max);
+vector<int> randList(int listsize, int max);
+void inliers(vector<Point3d> X, int order);
 #endif
