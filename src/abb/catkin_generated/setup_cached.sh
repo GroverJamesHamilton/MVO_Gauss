@@ -8,5 +8,5 @@
 
 # modified environment variables
 export CMAKE_PREFIX_PATH="/home/alesm512/ABB_New_Msc/src/abb/devel:$CMAKE_PREFIX_PATH"
-export ROSLISP_PACKAGE_DIRECTORIES="/home/alesm512/ABB_New_Msc/src/abb/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
+export ROSLISP_PACKAGE_DIRECTORIES='/home/alesm512/ABB_New_Msc/src/abb/devel/share/common-lisp'
 export ROS_PACKAGE_PATH="/home/alesm512/ABB_New_Msc/src/abb:$ROS_PACKAGE_PATH"

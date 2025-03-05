@@ -32,8 +32,8 @@ tuple <Mat, Mat, vector<float>> EKF_3D(Mat Zvw, Mat xhat, double t, Mat Qk, Mat 
 	double t2 = t*t/2;
 
 	Mat Qrot = (Mat_<double>(3,3) << q0*q0+q1*q1-q2*q2-q3*q3,2*(q1*q2-q0*q3),2*(q0*q2+q1*q3),
-																2*(q0*q3+q1*q2),q0*q0-q1*q1+q2*q2-q3*q3,2*(-q0*q1+q2*q3),
-																2*(-q0*q2+q1*q3),2*(q2*q3+q0*q1),q0*q0-q1*q1-q2*q2+q3*q3);
+																	2*(q0*q3+q1*q2),q0*q0-q1*q1+q2*q2-q3*q3,2*(-q0*q1+q2*q3),
+																	2*(-q0*q2+q1*q3),2*(q2*q3+q0*q1),q0*q0-q1*q1-q2*q2+q3*q3);
 
 	Mat Fk = (Mat_<double>(13,13) << 1,0,0, Qrot.at<double>(0,0)*t,Qrot.at<double>(1,0)*t,Qrot.at<double>(2,0)*t, 0,0,0,0, 0,0,0,
 																	 0,1,0, Qrot.at<double>(0,1)*t,Qrot.at<double>(1,1)*t,Qrot.at<double>(1,2)*t, 0,0,0,0, 0,0,0,
@@ -43,19 +43,14 @@ tuple <Mat, Mat, vector<float>> EKF_3D(Mat Zvw, Mat xhat, double t, Mat Qk, Mat 
 																	 0,0,0, 0,1,0, 0,0,0,0, 0,0,0,
 																	 0,0,0, 0,0,1, 0,0,0,0, 0,0,0,
 
-																	 //0,0,0, 0,0,0, 1,     -t/2*wx,-t/2*wy,-t/2*wz, -q1*t2,-q2*t2,-q3*t2,
-																	 //0,0,0, 0,0,0, t/2*wx, 1,     -t/2*wz, t/2*wy,  q0*t2, q3*t2,-q2*t2,
-																	 //0,0,0, 0,0,0, t/2*wy, t/2*wz, 1,     -t/2*wx, -q3*t2, q0*t2, q1*t2,
-																	 //0,0,0, 0,0,0, t/2*wz,-t/2*wy, t/2*wx, 1,       q2*t2,-q1*t2, q0*t2,
-
 																	 0,0,0, 0,0,0, 1,     -t/2*wx,-t/2*wy,-t/2*wz, 0,0,0,
 																	 0,0,0, 0,0,0, t/2*wx, 1,     -t/2*wz, t/2*wy, 0,0,0,
 																	 0,0,0, 0,0,0, t/2*wy, t/2*wz, 1,     -t/2*wx, 0,0,0,
 																	 0,0,0, 0,0,0, t/2*wz,-t/2*wy, t/2*wx, 1,      0,0,0,
 
-																	 0,0,0, 0,0,0, 0,0,0,0,                         1,0,0,
-																	 0,0,0, 0,0,0, 0,0,0,0,                         0,1,0,
-																	 0,0,0, 0,0,0, 0,0,0,0,                         0,0,1);
+																	 0,0,0, 0,0,0, 0,0,0,0,                        1,0,0,
+																	 0,0,0, 0,0,0, 0,0,0,0,                        0,1,0,
+																	 0,0,0, 0,0,0, 0,0,0,0,                        0,0,1);
 
   Mat Gk = (Mat_<double>(13,6) <<  0,0,0, 0,0,0,
 																	 0,0,0, 0,0,0,
