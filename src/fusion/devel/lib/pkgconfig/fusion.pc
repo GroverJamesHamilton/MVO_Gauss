@@ -1,8 +1,0 @@
-prefix=/home/labbare/abb_ws/src/fusion/devel
-
-Name: fusion
-Description: Description of fusion
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
