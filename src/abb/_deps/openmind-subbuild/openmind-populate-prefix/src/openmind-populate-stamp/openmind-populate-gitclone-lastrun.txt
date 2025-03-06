@@ -1,3 +1,0 @@
-repository='https://github.com/ohhmm/openmind.git'
-module=''
-tag='origin'

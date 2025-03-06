@@ -1,3 +1,0 @@
-[submodule "src/abb/build/opencv_build/opencv"]
-	path = src/abb/build/opencv_build/opencv
-	url = https://github.com/opencv/opencv
