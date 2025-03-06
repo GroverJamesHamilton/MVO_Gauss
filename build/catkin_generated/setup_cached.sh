@@ -7,5 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export PKG_CONFIG_PATH="/home/alesm512/ABB_New_Msc/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PWD='/home/alesm512/ABB_New_Msc/build'
+export LD_LIBRARY_PATH='/home/alesm512/ABB_New_Msc/devel/lib:/opt/ros/noetic/lib:/opt/ros/foxy/opt/yaml_cpp_vendor/lib:/opt/ros/foxy/lib/x86_64-linux-gnu:/opt/ros/foxy/lib'
+export PKG_CONFIG_PATH='/home/alesm512/ABB_New_Msc/devel/lib/pkgconfig:/opt/ros/noetic/lib/pkgconfig'
+export PWD='/home/alesm512/MVO_Gauss/build'
+export ROS_PACKAGE_PATH='/home/alesm512/MVO_Gauss/src:/home/alesm512/ABB_New_Msc/src:/opt/ros/noetic/share'

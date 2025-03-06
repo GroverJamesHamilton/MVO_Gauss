@@ -57,10 +57,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/alesm512/ABB_New_Msc/src
+CMAKE_SOURCE_DIR = /home/alesm512/MVO_Gauss/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/alesm512/ABB_New_Msc/build
+CMAKE_BINARY_DIR = /home/alesm512/MVO_Gauss/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -142,9 +142,9 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alesm512/ABB_New_Msc/build/CMakeFiles /home/alesm512/ABB_New_Msc/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alesm512/MVO_Gauss/build/CMakeFiles /home/alesm512/MVO_Gauss/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alesm512/ABB_New_Msc/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alesm512/MVO_Gauss/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -783,19 +783,6 @@ actionlib_msgs_generate_messages_lisp/fast:
 .PHONY : actionlib_msgs_generate_messages_lisp/fast
 
 #=============================================================================
-# Target rules for targets named imu_node
-
-# Build rule for target.
-imu_node: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 imu_node
-.PHONY : imu_node
-
-# fast build rule for target.
-imu_node/fast:
-	$(MAKE) $(MAKESILENT) -f imu/CMakeFiles/imu_node.dir/build.make imu/CMakeFiles/imu_node.dir/build
-.PHONY : imu_node/fast
-
-#=============================================================================
 # Target rules for targets named odom_node
 
 # Build rule for target.
@@ -881,7 +868,6 @@ help:
 	@echo "... gmock_main"
 	@echo "... gtest"
 	@echo "... gtest_main"
-	@echo "... imu_node"
 	@echo "... nav_node"
 	@echo "... odom_node"
 .PHONY : help

@@ -1,8 +1,8 @@
-# Install script for directory: /home/alesm512/ABB_New_Msc/src/fusion
+# Install script for directory: /home/alesm512/MVO_Gauss/src/fusion
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/alesm512/ABB_New_Msc/install")
+  set(CMAKE_INSTALL_PREFIX "/home/alesm512/MVO_Gauss/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -43,17 +43,17 @@ if(NOT DEFINED CMAKE_OBJDUMP)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/build/fusion/catkin_generated/installspace/fusion.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/alesm512/MVO_Gauss/build/fusion/catkin_generated/installspace/fusion.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/fusion/cmake" TYPE FILE FILES
-    "/home/alesm512/ABB_New_Msc/build/fusion/catkin_generated/installspace/fusionConfig.cmake"
-    "/home/alesm512/ABB_New_Msc/build/fusion/catkin_generated/installspace/fusionConfig-version.cmake"
+    "/home/alesm512/MVO_Gauss/build/fusion/catkin_generated/installspace/fusionConfig.cmake"
+    "/home/alesm512/MVO_Gauss/build/fusion/catkin_generated/installspace/fusionConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/fusion" TYPE FILE FILES "/home/alesm512/ABB_New_Msc/src/fusion/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/fusion" TYPE FILE FILES "/home/alesm512/MVO_Gauss/src/fusion/package.xml")
 endif()
 

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/alesm512/ABB_New_Msc/devel/lib/nav/nav_node"
-  "/home/alesm512/ABB_New_Msc/devel/lib/nav/nav_node.pdb"
+  "/home/alesm512/MVO_Gauss/devel/lib/nav/nav_node"
+  "/home/alesm512/MVO_Gauss/devel/lib/nav/nav_node.pdb"
   "CMakeFiles/nav_node.dir/src/nav_node.cpp.o"
   "CMakeFiles/nav_node.dir/src/nav_node.cpp.o.d"
 )

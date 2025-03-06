@@ -4,5 +4,5 @@ PROJECT_PKG_CONFIG_INCLUDE_DIRS = "".split(';') if "" != "" else []
 PROJECT_CATKIN_DEPENDS = "".replace(';', ' ')
 PKG_CONFIG_LIBRARIES_WITH_PREFIX = "".split(';') if "" != "" else []
 PROJECT_NAME = "fusion"
-PROJECT_SPACE_DIR = "/home/alesm512/ABB_New_Msc/devel"
+PROJECT_SPACE_DIR = "/home/alesm512/MVO_Gauss/devel"
 PROJECT_VERSION = "0.0.0"

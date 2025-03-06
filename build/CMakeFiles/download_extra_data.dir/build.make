@@ -53,10 +53,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/alesm512/ABB_New_Msc/src
+CMAKE_SOURCE_DIR = /home/alesm512/MVO_Gauss/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/alesm512/ABB_New_Msc/build
+CMAKE_BINARY_DIR = /home/alesm512/MVO_Gauss/build
 
 # Utility rule file for download_extra_data.
 
@@ -78,6 +78,6 @@ CMakeFiles/download_extra_data.dir/clean:
 .PHONY : CMakeFiles/download_extra_data.dir/clean
 
 CMakeFiles/download_extra_data.dir/depend:
-	cd /home/alesm512/ABB_New_Msc/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alesm512/ABB_New_Msc/src /home/alesm512/ABB_New_Msc/src /home/alesm512/ABB_New_Msc/build /home/alesm512/ABB_New_Msc/build /home/alesm512/ABB_New_Msc/build/CMakeFiles/download_extra_data.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/alesm512/MVO_Gauss/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/alesm512/MVO_Gauss/src /home/alesm512/MVO_Gauss/src /home/alesm512/MVO_Gauss/build /home/alesm512/MVO_Gauss/build /home/alesm512/MVO_Gauss/build/CMakeFiles/download_extra_data.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/download_extra_data.dir/depend
 

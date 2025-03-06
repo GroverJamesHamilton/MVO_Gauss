@@ -1,8 +1,8 @@
-# Install script for directory: /home/alesm512/ABB_New_Msc/src/abb
+# Install script for directory: /home/alesm512/MVO_Gauss/src/abb
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/alesm512/ABB_New_Msc/install")
+  set(CMAKE_INSTALL_PREFIX "/home/alesm512/MVO_Gauss/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

@@ -1,4 +1,4 @@
-prefix=/home/alesm512/ABB_New_Msc/devel
+prefix=/home/alesm512/MVO_Gauss/devel
 
 Name: nav
 Description: Description of nav

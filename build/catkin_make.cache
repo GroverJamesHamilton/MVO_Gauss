@@ -1,2 +1,2 @@
-abb:fusion:imu:nav:odom
--DCATKIN_DEVEL_PREFIX=/home/alesm512/ABB_New_Msc/devel -DCMAKE_INSTALL_PREFIX=/home/alesm512/ABB_New_Msc/install -G Unix Makefiles
+abb:fusion:nav:odom
+-DCATKIN_DEVEL_PREFIX=/home/alesm512/MVO_Gauss/devel -DCMAKE_INSTALL_PREFIX=/home/alesm512/MVO_Gauss/install -G Unix Makefiles

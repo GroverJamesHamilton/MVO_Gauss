@@ -1,8 +1,0 @@
-prefix=/home/alesm512/ABB_New_Msc/install
-
-Name: imu
-Description: Description of imu
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

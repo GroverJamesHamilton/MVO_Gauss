@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DROSCONSOLE_BACKEND_LOG4CXX -DROS_BUILD_SHARED_LIBS=1 -DROS_PACKAGE_NAME=\"abb\"
 
-CXX_INCLUDES = -I/home/alesm512/ABB_New_Msc/src/abb/include/abb -I/opt/ros/noetic/include -I/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp -isystem /usr/include/opencv4
+CXX_INCLUDES = -I/home/alesm512/MVO_Gauss/src/abb/include/abb -I/opt/ros/noetic/include -I/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp -I/usr/include/opencv4 -isystem /usr/local/include/opencv4
 
-CXX_FLAGS = 
+CXX_FLAGS = -std=gnu++17
 
