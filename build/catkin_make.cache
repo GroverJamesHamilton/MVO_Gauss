@@ -1,2 +1,0 @@
-abb:fusion:nav:odom
--DCATKIN_DEVEL_PREFIX=/home/alesm512/MVO_Gauss/devel -DCMAKE_INSTALL_PREFIX=/home/alesm512/MVO_Gauss/install -G Unix Makefiles

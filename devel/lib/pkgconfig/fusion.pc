@@ -1,8 +1,0 @@
-prefix=/home/alesm512/MVO_Gauss/devel
-
-Name: fusion
-Description: Description of fusion
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

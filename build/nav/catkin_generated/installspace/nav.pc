@@ -1,8 +1,0 @@
-prefix=/home/alesm512/MVO_Gauss/install
-
-Name: nav
-Description: Description of nav
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
