@@ -1,6 +1,6 @@
 
 Visual odometry with scale recovery howto:
-
+After making a catkin workspace in the repo,
 1. In the terminal, build with catkin_make in abb_ws
 2. cd into /src/abb (The essential files here are abb_node.cpp, function.cpp and function.h header file, EKF in filter.cpp and filter.h)
 3. Find you image topic by typing: rosbag info <bag file>
