@@ -2,7 +2,6 @@ build/
 devel/
 install/
 CMakeCache.txt
-CMakeFiles/
 Makefile
 *.log
 *.swp
