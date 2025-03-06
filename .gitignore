@@ -5,3 +5,11 @@ CMakeCache.txt
 Makefile
 *.log
 *.swp
+catkin_generated/
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+CTestConfiguration.ini
+Makefile
+_deps/
+gtest/
